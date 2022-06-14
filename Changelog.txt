@@ -1,0 +1,2 @@
+v1.0.0 -added processor monitoring
+v1.0.1 -added RAM monitoring

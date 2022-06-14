@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Renci.SshNet;
 using System.Timers;
+
 namespace bpp_admin.SSH.Tests
 {
     public class tests
@@ -37,33 +38,72 @@ namespace bpp_admin.SSH.Tests
         {
 
             //   var cmd = client.CreateCommand("top -b -n5 -d.3 | grep \"Mem\" | tail -n1 | awk '{print($2)}' | cut -d'%' -f1");
-            var cmd = client.CreateCommand(@"top -b -n5 -d.2 | grep 'Cpu(s)\|Mem' | tail -n2");
+            var cmd = client.CreateCommand(@"top -b -n5 -d.2 | grep 'Cpu(s)\|Mem' | grep -v 'Swap' | tail -n2");
             string result = cmd.Execute();
-            //Console.WriteLine(result);
+         //   Console.WriteLine(result);
             string[] lines = result.Split("\n");
             //Console.WriteLine(lines[2]);
             string proc_use = lines[0].Substring(8, 5);
 
+            
+            bool Mem_in_MiB = false;
+            bool comma_in_double = false;
+            if(lines[1].ToCharArray().Count(c => c == ',') > 3) {
+                StringBuilder if_comma = new StringBuilder(lines[1]);
+                bool del = true;
+                int[] comma_pos = new int[lines[1].ToCharArray().Count(c => c == ',')];
+                int ite = 0;
+                for(int i = 0; i < if_comma.Length; i++)
+                {
+
+                    if (if_comma[i] == ',')
+                    {
+                        comma_pos[ite] = i;
+                        ite++;
+                    }
+
+                }
+                if_comma.Remove(comma_pos[0], 1);if_comma.Insert(comma_pos[0], '.');
+                if_comma.Remove(comma_pos[2], 1); if_comma.Insert(comma_pos[2], '.');
+                if_comma.Remove(comma_pos[4], 1); if_comma.Insert(comma_pos[4], '.');
+
+
+
+
+                //Console.WriteLine(if_comma.ToString());
+                lines[1] = if_comma.ToString();
+            }
             string[] mem_line = lines[1].Split(',');
+            if (mem_line[0].Contains("MiB")) { Mem_in_MiB = true; }
+       
 
-            //C//onsole.WriteLine(mem_line[1]);
-
-            Task<int> get_total = Task.Run(() =>
+            Task<double> get_total = Task.Run(() =>
             {
-                int output = 0;
+                double output = 0;
                 StringBuilder buffer = new StringBuilder();
+          
+              
                 foreach (char s in mem_line[0])
                 {
-                    if (s != 'M' && s != 'e' &&s!='m' && s != ':' && s != 'k' && s != 't' && s != 'o' && s != 'a' && s != 'l' && s != ',')
+                    if (s != 'M' && s != 'e' &&s!='m' && s != ':' && s != 'k' && s != 't' && s != 'o' && s != 'a' && s != 'l' && s != ','&& s!='i'&&s!='B'&&s!='f'&&s!='r')
                     {
                         buffer.Append(s);
                     }
                 }
-
-                output = Convert.ToInt32(buffer.ToString().Trim());
-                output = output / 1048576; // KB to GB
-                
-                return output;//output;
+                string inbuff = buffer.ToString();
+                inbuff = inbuff.Trim('\t').Trim();
+              //  Console.WriteLine(inbuff);
+                output = Convert.ToDouble(inbuff.Replace('.',','));
+              //  output = Convert.ToInt32(776.2);
+                if (Mem_in_MiB == true)
+                {
+                    output = output / 1024;//MiB to GiB
+                }
+                else
+                {
+                    output = output / 1048576; // KB to GB
+                }
+                return Math.Round(output,2);//output;
             });
 
             Task<double> get_used = Task.Run(() =>
@@ -72,16 +112,24 @@ namespace bpp_admin.SSH.Tests
                 StringBuilder buffer = new StringBuilder();
                 foreach (char s in mem_line[1])
                 {
-                    if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',')
+                    if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r') 
                     {
                         buffer.Append(s);
                     }
 
                 }
-                output = Convert.ToInt32(buffer.ToString().Trim());
-               // Console.WriteLine(buffer.ToString());
-                output = Math.Round(output / 1048576,2); // KB to GB
-                Console.Write(output);
+                string inbuff = buffer.ToString().Trim('\t').Trim();
+                output = Convert.ToDouble(inbuff.Replace('.',','));
+              //  output = Convert.ToInt32(744.3);
+                // Console.WriteLine(buffer.ToString());
+                if (Mem_in_MiB == true)
+                {
+                    output = output / 1024;//MiB to GiB
+                }
+                else
+                {
+                    output = output / 1048576; // KB to GB
+                }
                 return output;
             });
 

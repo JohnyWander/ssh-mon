@@ -89,8 +89,16 @@ namespace bpp_admin
 
         private static void menu()
         {
-            IDictionary<string, string> lang_strings = GUI.Language_strings.language_strings;
-            Console.WriteLine(lang_strings["start_test"]);
+            try
+            {
+                IDictionary<string, string> lang_strings = GUI.Language_strings.language_strings;
+                Console.WriteLine(lang_strings["start_test"]);
+            }
+            catch
+            {
+                init_lang_strings("ENG");
+                menu();
+            }
             
         }
         private static void read_conf()
