@@ -46,6 +46,8 @@ namespace bpp_admin.SSH.Tests
 
             string[] mem_line = lines[1].Split(',');
 
+            //C//onsole.WriteLine(mem_line[1]);
+
             Task<int> get_total = Task.Run(() =>
             {
                 int output = 0;
@@ -58,19 +60,32 @@ namespace bpp_admin.SSH.Tests
                     }
                 }
 
-                output = Convert.ToInt32(buffer.ToString());
+                output = Convert.ToInt32(buffer.ToString().Trim());
                 output = output / 1048576; // KB to GB
                 
                 return output;//output;
             });
 
-            Task<int> get_used = Task.Run(() =>
+            Task<double> get_used = Task.Run(() =>
             {
-                int output = 0;
+                double output = 0;
+                StringBuilder buffer = new StringBuilder();
+                foreach (char s in mem_line[1])
+                {
+                    if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',')
+                    {
+                        buffer.Append(s);
+                    }
 
+                }
+                output = Convert.ToInt32(buffer.ToString().Trim());
+               // Console.WriteLine(buffer.ToString());
+                output = Math.Round(output / 1048576,2); // KB to GB
+                Console.Write(output);
                 return output;
             });
 
+            Task.WaitAll(get_total, get_used);
 
 
 
