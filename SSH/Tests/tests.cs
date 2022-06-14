@@ -38,9 +38,9 @@ namespace bpp_admin.SSH.Tests
         {
 
             //   var cmd = client.CreateCommand("top -b -n5 -d.3 | grep \"Mem\" | tail -n1 | awk '{print($2)}' | cut -d'%' -f1");
-            var cmd = client.CreateCommand(@"top -b -n5 -d.2 | grep 'Cpu(s)\|Mem' | grep -v 'Swap' | tail -n2");
+            var cmd = client.CreateCommand(@"top -b -n10 -d.2 | grep 'Cpu(s)\|Mem' | grep -v 'Swap' | tail -n2");
             string result = cmd.Execute();
-         //   Console.WriteLine(result);
+           //Console.WriteLine(result);
             string[] lines = result.Split("\n");
             //Console.WriteLine(lines[2]);
             string proc_use = lines[0].Substring(8, 5);

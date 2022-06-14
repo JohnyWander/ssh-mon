@@ -304,7 +304,7 @@ namespace bpp_admin.GUI
         {
             Console.ForegroundColor = (ConsoleColor)console_color_index;
             (int old_x, int old_y) = Console.GetCursorPosition();
-            Console.SetCursorPosition(cpu_x1[0], cpu_y1[0]);
+            Console.SetCursorPosition(cpu_x1[server_id], cpu_y1[server_id]);
             Console.Write(percentage);
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.SetCursorPosition(old_x, old_y);
