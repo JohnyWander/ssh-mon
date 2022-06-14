@@ -18,6 +18,16 @@ namespace bpp_admin.GUI
         static private int[] pos_y1 = new int[Server_amount];//
         static private int[] pos_y2 = new int[Server_amount];//
 
+        static private int[] cpu_x1 = new int[Server_amount];
+        static private int[] cpu_x2 = new int[Server_amount];
+        static private int[] cpu_y1 = new int[Server_amount];
+        static private int[] cpu_y2 = new int[Server_amount];
+
+        static private int[] ram_x1 = new int[Server_amount];
+        static private int[] ram_x2 = new int[Server_amount];
+        static private int[] ram_y1 = new int[Server_amount];
+        static private int[] ram_y2 = new int[Server_amount];
+
         static private bool[] selection_indicator = new bool[Server_amount];// if serverl is selected bool
         static private int[] pos_x1_selection = new int[Server_amount];// selection position indicators
         static private int[] pos_x2_selection = new int[Server_amount];//
@@ -43,12 +53,18 @@ namespace bpp_admin.GUI
             foreach (KeyValuePair<int, string> server in SSH.connections.names)
             {
                 str_tools.draw_hash();Console.Write(" "+ server.Key);(pos_x1_selection[server.Key], pos_y1_selection[server.Key]) = Console.GetCursorPosition();
-                Console.Write("\n"+server.Value + ": ");
+                Console.Write("\n"+server.Value + " - status: ");
                 Console.ForegroundColor = ConsoleColor.Green;
-                (pos_x1[server.Key], pos_y1[server.Key]) = Console.GetCursorPosition();
-                Console.Write("OK");
-                (pos_x2[server.Key], pos_y2[server.Key]) = Console.GetCursorPosition();
-                Console.ForegroundColor = ConsoleColor.Gray;
+                (pos_x1[server.Key], pos_y1[server.Key]) = Console.GetCursorPosition();//
+                Console.Write("OK");///
+                (pos_x2[server.Key], pos_y2[server.Key]) = Console.GetCursorPosition();///
+                Console.ForegroundColor = ConsoleColor.Gray;//// OVERALL STATUS BLOCK
+
+
+
+
+
+
                 is_set_ok[server.Key] = true;
             }
             Console.Write("\n\n");
