@@ -28,7 +28,7 @@ namespace bpp_admin.SSH
             int ite = 0;
             foreach (var serv in server_DICT)
             {
-              
+             
                 var SERVER = serv.Value;
 
 
@@ -47,8 +47,10 @@ namespace bpp_admin.SSH
                 });
 
                 connections123.Add(Task.Factory.StartNew(() => connection_and_tests(conn, cts.Token,SERVER.name,ite),cts.Token));
-                ite++;
+
                 
+
+                ite++;
             }
 
           //connections123.Add(Task.Run(() => Stop(cts)));
@@ -71,12 +73,13 @@ namespace bpp_admin.SSH
             {
                 try
                 {
-                    //sshClient.Connect();
+                  
 
-                    //   var cmd = sshClient.CreateCommand("df -h");
-                    // var cmd = sshClient.CreateCommand("top -n1");
-                    //   string result = cmd.Execute();
-                    //  Console.WriteLine(result);
+                    Tests.tests tests = new Tests.tests(sshClient,int_key-1);
+                    //sshClient.Connect();
+                    
+
+                    
                     while (!cts.IsCancellationRequested)
                     {
                         Task.Delay(2000).Wait();

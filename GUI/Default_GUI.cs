@@ -18,15 +18,20 @@ namespace bpp_admin.GUI
         static private int[] pos_y1 = new int[Server_amount];//
         static private int[] pos_y2 = new int[Server_amount];//
 
+        private static string[] cpu_percentage = new string[Server_amount]; // Processor % and positions of output 
         static private int[] cpu_x1 = new int[Server_amount];
         static private int[] cpu_x2 = new int[Server_amount];
         static private int[] cpu_y1 = new int[Server_amount];
         static private int[] cpu_y2 = new int[Server_amount];
+        static private int[] cpu_color_index = new int[Server_amount];
+        
 
-        static private int[] ram_x1 = new int[Server_amount];
+        private static string[] ram_percentage = new string[Server_amount];  
+        static private int[] ram_x1 = new int[Server_amount]; // Ram %
         static private int[] ram_x2 = new int[Server_amount];
         static private int[] ram_y1 = new int[Server_amount];
         static private int[] ram_y2 = new int[Server_amount];
+        static private int[] ram_color_index = new int[Server_amount];
 
         static private bool[] selection_indicator = new bool[Server_amount];// if serverl is selected bool
         static private int[] pos_x1_selection = new int[Server_amount];// selection position indicators
@@ -59,6 +64,12 @@ namespace bpp_admin.GUI
                 Console.Write("OK");///
                 (pos_x2[server.Key], pos_y2[server.Key]) = Console.GetCursorPosition();///
                 Console.ForegroundColor = ConsoleColor.Gray;//// OVERALL STATUS BLOCK
+
+                Console.Write("\nCPU: ");(cpu_x1[server.Key], cpu_y1[server.Key]) = Console.GetCursorPosition();
+                Console.Write("     ");(cpu_x2[server.Key], cpu_y2[server.Key]) = Console.GetCursorPosition();Console.Write("\n"); // CPU status block
+
+                Console.Write("RAM: ");(ram_x1[server.Key], ram_y1[server.Key]) = Console.GetCursorPosition();
+                Console.Write("     ");(ram_x2[server.Key], ram_y2[server.Key]) = Console.GetCursorPosition();Console.Write("\n");
 
 
 
@@ -262,6 +273,46 @@ namespace bpp_admin.GUI
             Console.ForegroundColor = ConsoleColor.Gray;
 
         }
+
+
+        public static void fetch_cpu_ram_result(int id,string cpu_usage)
+        {
+            int console_color_index=0;
+            
+            cpu_percentage[id] = cpu_usage.Trim('%').Trim().Replace('.',',');
+           // Console.WriteLine(cpu_percentage[id]);
+            int cpu_int_percentage = Convert.ToInt32(Convert.ToDouble(cpu_percentage[id]));
+            if (cpu_int_percentage <= 50)
+            {
+                console_color_index = 10; // green
+            }else if( cpu_int_percentage >50 && cpu_int_percentage <= 80)
+            {
+                console_color_index = 14;// yellow
+            }
+            else if( cpu_int_percentage>80)
+            {
+                console_color_index = 12; //red
+            }
+          //  Console.WriteLine(id);
+
+            insert_cpu_percentage(cpu_usage,id, console_color_index);
+
+
+        }
+
+        private static void insert_cpu_percentage(string percentage,int server_id,int console_color_index)
+        {
+            Console.ForegroundColor = (ConsoleColor)console_color_index;
+            (int old_x, int old_y) = Console.GetCursorPosition();
+            Console.SetCursorPosition(cpu_x1[0], cpu_y1[0]);
+            Console.Write(percentage);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.SetCursorPosition(old_x, old_y);
+        }
+
+       // public static void
+
+
     }
 
 }
