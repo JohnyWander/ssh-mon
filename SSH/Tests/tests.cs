@@ -16,7 +16,9 @@ namespace bpp_admin.SSH.Tests
         public string cpu_usage { get; set; } 
         public string cpu_usage_top_process;
 
-        public string ram_top;
+        public string ram_total { get; set; }
+        public string ram_used { get; set; }
+        public string ram_free { get; set; }
 
         public tests(SshClient client,int server_ID)
         {
@@ -77,7 +79,7 @@ namespace bpp_admin.SSH.Tests
             if (mem_line[0].Contains("MiB")) { Mem_in_MiB = true; }
        
 
-            Task<double> get_total = Task.Run(() =>
+            Task<double> get_First = Task.Run(() =>
             {
                 double output = 0;
                 StringBuilder buffer = new StringBuilder();
@@ -106,7 +108,7 @@ namespace bpp_admin.SSH.Tests
                 return Math.Round(output,2);//output;
             });
 
-            Task<double> get_used = Task.Run(() =>
+            Task<double> get_second = Task.Run(() =>
             {
                 double output = 0;
                 StringBuilder buffer = new StringBuilder();
@@ -133,7 +135,34 @@ namespace bpp_admin.SSH.Tests
                 return output;
             });
 
-            Task.WaitAll(get_total, get_used);
+            Task<double> get_third = Task.Run(() =>
+            {
+                double output = 0;
+                StringBuilder buffer = new StringBuilder();
+                foreach (char s in mem_line[2])
+                {
+                    if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
+                    {
+                        buffer.Append(s);
+                    }
+
+                }
+                string inbuff = buffer.ToString().Trim('\t').Trim();
+                output = Convert.ToDouble(inbuff.Replace('.', ','));
+                //  output = Convert.ToInt32(744.3);
+                // Console.WriteLine(buffer.ToString());
+                if (Mem_in_MiB == true)
+                {
+                    output = output / 1024;//MiB to GiB
+                }
+                else
+                {
+                    output = output / 1048576; // KB to GB
+                }
+                return output;
+            });
+
+            Task.WaitAll(get_First, get_second,get_third);
 
 
 

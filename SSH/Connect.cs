@@ -49,7 +49,7 @@ namespace bpp_admin.SSH
                 connections123.Add(Task.Factory.StartNew(() => connection_and_tests(conn, cts.Token,SERVER.name,ite),cts.Token));
 
                 //Console.WriteLine(ite);
-                Thread.Sleep(10);
+                Thread.Sleep(100);
 
                 ite++;
             }
