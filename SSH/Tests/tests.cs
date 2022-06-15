@@ -27,7 +27,7 @@ namespace bpp_admin.SSH.Tests
 
             System.Timers.Timer Get_cpu_ram= new System.Timers.Timer();
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => cpu_usage=get_cpu_ram_usage(sender, e,client));
-            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => bpp_admin.GUI.Default_GUI.fetch_cpu_ram_result(id,cpu_usage));
+            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => Task.Run(()=>bpp_admin.GUI.Default_GUI.fetch_cpu_ram_result(id,cpu_usage).Wait()));
             Get_cpu_ram.Interval = 1000;
             Get_cpu_ram.Enabled = true;
             

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Timers;
+using System.IO;
 namespace bpp_admin.GUI
 {
     public static class Default_GUI
@@ -46,10 +47,12 @@ namespace bpp_admin.GUI
 
         static private int x, y;
 
-    //    private static char dot = '\u2022';
+        //    private static char dot = '\u2022';
 
         public static void run()
         {
+          
+
             Console.Clear();
             Tools.Interfaces.IStringTools str_tools = new Tools.Tools();
 
@@ -275,7 +278,7 @@ namespace bpp_admin.GUI
         }
 
 
-        public static void fetch_cpu_ram_result(int id,string cpu_usage)
+        public static Task fetch_cpu_ram_result(int id,string cpu_usage)
         {
             int console_color_index=0;
             
@@ -293,11 +296,11 @@ namespace bpp_admin.GUI
             {
                 console_color_index = 12; //red
             }
-          //  Console.WriteLine(id);
+          // Console.WriteLine(id);
 
             insert_cpu_percentage(cpu_usage,id, console_color_index);
 
-
+            return Task.CompletedTask;
         }
 
         private static void insert_cpu_percentage(string percentage,int server_id,int console_color_index)

@@ -5,6 +5,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
+using System.IO;
+using System.Linq;
 namespace bpp_admin
 {
     class Program
@@ -22,6 +24,7 @@ namespace bpp_admin
                 ConsoleKeyInfo key = Console.ReadKey();
             Console.Write("\b \b");
 
+            
 
                 char key_c = key.KeyChar;
                 byte xd = Convert.ToByte(key_c);
@@ -35,9 +38,19 @@ namespace bpp_admin
 
                     var con = new SSH.connections();
 
-                    //   Task cancel = Task.Run(() => Stop(cancel_all));
-
+                //   Task cancel = Task.Run(() => Stop(cancel_all));
+                int servers = Directory.GetFiles("servers").Count();
                     con.run(cancel_all);
+
+                while (true)
+                {
+                    if (servers == con.connections123.Count)
+                    {
+                        break;
+                    }
+                }
+
+
                     // Task gui = Task.Run(() => GUI.Default_GUI.run());
                     GUI.Default_GUI.run();
                     Task.WaitAll(con.connections123.ToArray());

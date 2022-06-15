@@ -45,16 +45,18 @@ namespace bpp_admin.SSH
                 {
                 new PrivateKeyAuthenticationMethod(SERVER.user,pvk)
                 });
-
+                
                 connections123.Add(Task.Factory.StartNew(() => connection_and_tests(conn, cts.Token,SERVER.name,ite),cts.Token));
 
-                
+                //Console.WriteLine(ite);
+                Thread.Sleep(10);
 
                 ite++;
             }
 
           //connections123.Add(Task.Run(() => Stop(cts)));
            
+            
 
 
 
@@ -75,7 +77,7 @@ namespace bpp_admin.SSH
                 {
                   
 
-                    Tests.tests tests = new Tests.tests(sshClient,int_key-1);
+                    Tests.tests tests = new Tests.tests(sshClient,int_key);
                     //sshClient.Connect();
                     
 
