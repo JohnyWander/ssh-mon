@@ -48,10 +48,11 @@ namespace ssh_mon.SSH
                     {
                         ip += ":" + port;
                     }
-                
 
-                    server_DICT.Add(name, new Server(name,ip, login, key));
-
+                    if (enabled = true)
+                    {
+                        server_DICT.Add(name, new Server(name, ip, login, key));
+                    }
                 }
             }
             catch (IndexOutOfRangeException)

@@ -43,13 +43,18 @@ namespace ssh_mon.SSH
 
                 ConnectionInfo conn = new ConnectionInfo(SERVER.ip, SERVER.user, new AuthenticationMethod[]
                 {
+                  
                 new PrivateKeyAuthenticationMethod(SERVER.user,pvk)
                 });
-                
+
+                conn.KeyExchangeAlgorithms.Remove("curve25519-sha256"); // Algo is security thread - client private key generated with System.Random
+                conn.KeyExchangeAlgorithms.Remove("curve25519-sha256@libssg.org"); // which is  as insecure
+
+
                 connections123.Add(Task.Factory.StartNew(() => connection_and_tests(conn, cts.Token,SERVER.name,ite),cts.Token));
 
                 //Console.WriteLine(ite);
-                Thread.Sleep(100);
+                Thread.Sleep(100); // ... :| it makes "ite" increment propertly
 
                 ite++;
             }
