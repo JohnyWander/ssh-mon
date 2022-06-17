@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
-namespace bpp_admin.GUI
+namespace ssh_mon.GUI
 {
    public static class Language_strings
     {

@@ -3,8 +3,8 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net5.0</TargetFramework>
-    <AssemblyName>ssh_server_monitoring</AssemblyName>
-    <RootNamespace>ssh_server_monitoring</RootNamespace>
+    <AssemblyName>ssh_mon</AssemblyName>
+    <RootNamespace>ssh_mon</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

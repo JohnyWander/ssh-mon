@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Timers;
 using System.IO;
-namespace bpp_admin.GUI
+namespace ssh_mon.GUI
 {
     public static class Default_GUI
     {
@@ -27,7 +27,10 @@ namespace bpp_admin.GUI
         static private int[] cpu_color_index = new int[Server_amount];
         
 
-        private static string[] ram_percentage = new string[Server_amount];  
+        private static string[] ram_percentage = new string[Server_amount];
+        static private string[] ram_total = new string[Server_amount];
+        static private string[] ram_used = new string[Server_amount];
+        static private string[] ram_free = new string[Server_amount];
         static private int[] ram_x1 = new int[Server_amount]; // Ram %
         static private int[] ram_x2 = new int[Server_amount];
         static private int[] ram_y1 = new int[Server_amount];
@@ -72,7 +75,7 @@ namespace bpp_admin.GUI
                 Console.Write("     ");(cpu_x2[server.Key], cpu_y2[server.Key]) = Console.GetCursorPosition();Console.Write("\n"); // CPU status block
 
                 Console.Write("RAM: ");(ram_x1[server.Key], ram_y1[server.Key]) = Console.GetCursorPosition();
-                Console.Write("     ");(ram_x2[server.Key], ram_y2[server.Key]) = Console.GetCursorPosition();Console.Write("\n");
+                Console.Write("                                        ");(ram_x2[server.Key], ram_y2[server.Key]) = Console.GetCursorPosition();Console.Write("\n");
 
 
 
@@ -278,7 +281,7 @@ namespace bpp_admin.GUI
         }
 
 
-        public static Task fetch_cpu_ram_result(int id,string cpu_usage)
+        public static Task fetch_cpu_ram_result(int id,string cpu_usage,double total,double used,double free)
         {
             int console_color_index=0;
             
@@ -296,9 +299,33 @@ namespace bpp_admin.GUI
             {
                 console_color_index = 12; //red
             }
-          // Console.WriteLine(id);
+            // Console.WriteLine(id);
+
+
+            int console_color_index_ram = 0;
+            double ram_percentage_doub = (double)Math.Round((double)(used * 100) / total,2);
+            ram_percentage[id] = Convert.ToString(ram_percentage_doub) + "%";
+            ram_total[id] = Convert.ToString(total) + "GB";
+            ram_used[id] = Convert.ToString(used) + "GB";
+            ram_free[id] = Convert.ToString(free) + "GB";
+
+            if (ram_percentage_doub <= 50)
+            {
+                console_color_index_ram = 10;
+            }else if( ram_percentage_doub >50 && cpu_int_percentage <= 80)
+            {
+                console_color_index_ram = 14;
+            }
+            else if(ram_percentage_doub > 80)
+            {
+                console_color_index_ram = 12;
+            }
+
+
+
 
             insert_cpu_percentage(cpu_usage,id, console_color_index);
+            insert_ram_percentage(ram_percentage[id], id, ram_total[id], ram_used[id],console_color_index_ram);
 
             return Task.CompletedTask;
         }
@@ -313,10 +340,21 @@ namespace bpp_admin.GUI
             Console.SetCursorPosition(old_x, old_y);
         }
 
+        private static void insert_ram_percentage(string percentage,int server_id,string total,string used,int Console_color_index)
+        {
+            Console.ForegroundColor =(ConsoleColor)Console_color_index;
+            (int old_x, int old_y) = Console.GetCursorPosition();
+            Console.SetCursorPosition(ram_x1[server_id], ram_y1[server_id]);
+            Console.Write(percentage+"   "+used+"/"+total);
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.SetCursorPosition(old_x, old_y);
+        }
+    }
+
        // public static void
 
 
     }
 
-}
+
 

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.IO;
 using Renci.SshNet;
-namespace bpp_admin.SSH
+namespace ssh_mon.SSH
 {
     public class connections : make_list
     {
@@ -79,15 +79,17 @@ namespace bpp_admin.SSH
 
                     Tests.tests tests = new Tests.tests(sshClient,int_key);
                     //sshClient.Connect();
-                    
 
-                    
+
                     while (!cts.IsCancellationRequested)
                     {
-                        Task.Delay(2000).Wait();
-                  }
-                   
-                }catch(Exception e)
+                        Task.Delay(1000).Wait(); // :| i know ;)
+                    }
+
+                    
+
+                }
+                catch(Exception e)
                 {
                     Console.WriteLine(e.Message);
                 }

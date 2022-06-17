@@ -2,3 +2,4 @@ v1.0.0 -added processor monitoring
 v1.0.1 -added RAM monitoring(almost)
 v1.0.2 -fixed multi server processor monitoring - Queing Console.SetCursorPosition/write
 v1.0.3 -Turned off console quick edit mode - app freezing when clicking on console window fixed
+v1.0.4 -Ram monitoring works

@@ -8,7 +8,7 @@ using System.Text;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-namespace bpp_admin
+namespace ssh_mon
 {
     class Program
     {

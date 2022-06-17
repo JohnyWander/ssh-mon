@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
-namespace bpp_admin.Tools.Interfaces
+namespace ssh_mon.Tools.Interfaces
 {
     interface IKeyGen
     {

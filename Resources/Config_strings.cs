@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace bpp_admin.Resources
+namespace ssh_mon.Resources
 {
     public static class Config_strings
     {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Renci.SshNet;
 using System.Timers;
 
-namespace bpp_admin.SSH.Tests
+namespace ssh_mon.SSH.Tests
 {
     public class tests
     {
@@ -16,10 +16,11 @@ namespace bpp_admin.SSH.Tests
         public string cpu_usage { get; set; } 
         public string cpu_usage_top_process;
 
-        public string ram_total { get; set; }
-        public string ram_used { get; set; }
-        public string ram_free { get; set; }
+        public double ram_total { get; set; }
+        public double ram_used { get; set; }
+        public double ram_free { get; set; }
 
+        public string[] cpu_ram_returns;
         public tests(SshClient client,int server_ID)
         {
             id = server_ID;
@@ -29,16 +30,16 @@ namespace bpp_admin.SSH.Tests
 
             System.Timers.Timer Get_cpu_ram= new System.Timers.Timer();
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => cpu_usage=get_cpu_ram_usage(sender, e,client));
-            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => Task.Run(()=>bpp_admin.GUI.Default_GUI.fetch_cpu_ram_result(id,cpu_usage).Wait()));
+            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => Task.Run(()=>ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id,cpu_usage,ram_total,ram_used,ram_free).Wait()));
             Get_cpu_ram.Interval = 1000;
             Get_cpu_ram.Enabled = true;
             
            
         }
 
-        private static string get_cpu_ram_usage(object source, ElapsedEventArgs e, SshClient client)
+        private string get_cpu_ram_usage(object source, ElapsedEventArgs e, SshClient client)
         {
-
+            string[] values_to_return = new string[4];
             //   var cmd = client.CreateCommand("top -b -n5 -d.3 | grep \"Mem\" | tail -n1 | awk '{print($2)}' | cut -d'%' -f1");
             var cmd = client.CreateCommand(@"top -b -n10 -d.2 | grep 'Cpu(s)\|Mem' | grep -v 'Swap' | tail -n2");
             string result = cmd.Execute();
@@ -77,10 +78,15 @@ namespace bpp_admin.SSH.Tests
             }
             string[] mem_line = lines[1].Split(',');
             if (mem_line[0].Contains("MiB")) { Mem_in_MiB = true; }
-       
+
+            
 
             Task<double> get_First = Task.Run(() =>
             {
+                if (mem_line[0].Contains("otal"))
+                {
+
+                }
                 double output = 0;
                 StringBuilder buffer = new StringBuilder();
           
@@ -132,7 +138,7 @@ namespace bpp_admin.SSH.Tests
                 {
                     output = output / 1048576; // KB to GB
                 }
-                return output;
+                return Math.Round(output, 2);
             });
 
             Task<double> get_third = Task.Run(() =>
@@ -159,12 +165,59 @@ namespace bpp_admin.SSH.Tests
                 {
                     output = output / 1048576; // KB to GB
                 }
-                return output;
+                return Math.Round(output, 2);
             });
 
             Task.WaitAll(get_First, get_second,get_third);
 
+            if (mem_line[0].Contains("otal"))   // as versions of top not always have same order of free total/used
+            {
+                ram_total = get_First.Result;
+            }else if (mem_line[0].Contains("ree")){
+                ram_free = get_First.Result;
+            }else if(mem_line[0].Contains("sed")){
+                ram_used = get_First.Result;
+            }
+            else
+            {
+                throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
+            }
 
+
+            if (mem_line[1].Contains("otal"))   // as versions of top not always have same order of free total/used
+            {
+                ram_total = get_second.Result;
+            }
+            else if (mem_line[1].Contains("ree"))
+            {
+                ram_free = get_second.Result;
+            }
+            else if (mem_line[1].Contains("sed"))
+            {
+                ram_used = get_second.Result;
+            }
+            else
+            {
+                throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
+            }
+
+
+            if (mem_line[2].Contains("otal"))   // as versions of top not always have same order of free total/used
+            {
+                ram_total = get_third.Result;
+            }
+            else if (mem_line[2].Contains("ree"))
+            {
+                ram_free = get_third.Result;
+            }
+            else if (mem_line[2].Contains("sed"))
+            {
+                ram_used = get_third.Result;
+            }
+            else
+            {
+                throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
+            }
 
             int index = 12;
 

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
-namespace bpp_admin.Tools
+namespace ssh_mon.Tools
 {
     internal sealed  class Tools : Interfaces.IStringTools,Interfaces.IKeyGen
     {
