@@ -24,14 +24,14 @@ namespace ssh_mon.SSH.Tests
         public tests(SshClient client,int server_ID)
         {
             id = server_ID;
-            client.Connect();
+           // client.Connect();
             
            // Console.WriteLine(id);
 
             System.Timers.Timer Get_cpu_ram= new System.Timers.Timer();
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => cpu_usage=get_cpu_ram_usage(sender, e,client));
-            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => Task.Run(()=>ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id,cpu_usage,ram_total,ram_used,ram_free).Wait()));
-            Get_cpu_ram.Interval = 1000;
+            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id,cpu_usage,ram_total,ram_used,ram_free));
+            Get_cpu_ram.Interval = 2000;
             Get_cpu_ram.Enabled = true;
             
            
@@ -50,10 +50,10 @@ namespace ssh_mon.SSH.Tests
 
             
             bool Mem_in_MiB = false;
-            bool comma_in_double = false;
+           // bool comma_in_double = false;
             if(lines[1].ToCharArray().Count(c => c == ',') > 3) {
                 StringBuilder if_comma = new StringBuilder(lines[1]);
-                bool del = true;
+           
                 int[] comma_pos = new int[lines[1].ToCharArray().Count(c => c == ',')];
                 int ite = 0;
                 for(int i = 0; i < if_comma.Length; i++)
@@ -219,7 +219,7 @@ namespace ssh_mon.SSH.Tests
                 throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
             }
 
-            int index = 12;
+          
 
            // Console.WriteLine(proc_use);
 

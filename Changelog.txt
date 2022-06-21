@@ -3,3 +3,13 @@ v1.0.1 -added RAM monitoring(almost)
 v1.0.2 -fixed multi server processor monitoring - Queing Console.SetCursorPosition/write
 v1.0.3 -Turned off console quick edit mode - app freezing when clicking on console window fixed
 v1.0.4 -Ram monitoring works / changed defauklt namespace to program name from random mess
+
+v1.1.0 - 
+-Now you can use only one single private key for all servers, as SSH.NET's "ConnectionInfo" 
+class isn't "Thread safe" - authentication errors, weird stuff happening,
+(Key, and server config files ENCRYPTION with AES is coming soon to maximize safety)
+
+-Slowed down timers from 1000 to 2000ms to lower chance of Console.SetCursorPosition and GetCursorPosition
+messing GUI up
+- Wrapped CPU and ram status edit functions in Task.Run(()=> ..).Wait() to lower "mess up" chance almost to 0
+- Added functionality to reset gui, if somehow gui still gets messed up

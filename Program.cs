@@ -61,9 +61,9 @@ namespace ssh_mon
                 // error setting console mode.
             }
         }
-static void EnableQuickEdit()
+        static void EnableQuickEdit()
         {
-       
+
             IntPtr conHandle = GetStdHandle(STD_INPUT_HANDLE);
             int mode;
 
@@ -81,53 +81,47 @@ static void EnableQuickEdit()
             }
         }
         private static string LANG;
-       static public CancellationTokenSource cancel_all = new CancellationTokenSource();
+        static public CancellationTokenSource cancel_all = new CancellationTokenSource();
         static void Main(string[] args)
         {
-            
-            
-                DisableQuickEdit();
-            
-          
+
+
+            DisableQuickEdit();
+
+
             init();
             read_conf();
             init_lang_strings(LANG);
             menu();
-         
-            
-                ConsoleKeyInfo key = Console.ReadKey();
+
+
+            ConsoleKeyInfo key = Console.ReadKey();
             Console.Write("\b \b");
 
-            
-
-                char key_c = key.KeyChar;
-                byte xd = Convert.ToByte(key_c);
-                byte[] xdw = new byte[] { xd };
-                int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw));
 
 
-                if (switch_i == 1)
-                {
+            char key_c = key.KeyChar;
+            byte xd = Convert.ToByte(key_c);
+            byte[] xdw = new byte[] { xd };
+            int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw));
 
 
-                    var con = new SSH.connections();
+            if (switch_i == 1)
+            {
+
+
+                var con = new SSH.connections();
 
                 //   Task cancel = Task.Run(() => Stop(cancel_all));
                 int servers = Directory.GetFiles("servers").Count();
-                    con.run(cancel_all);
+                con.run(cancel_all);
 
-                while (true)
-                {
-                    if (servers == con.connections123.Count)
-                    {
-                        break;
-                    }
-                }
+           
 
 
-                    // Task gui = Task.Run(() => GUI.Default_GUI.run());
-                    GUI.Default_GUI.run();
-                    Task.WaitAll(con.connections123.ToArray());
+                // Task gui = Task.Run(() => GUI.Default_GUI.run());
+                GUI.Default_GUI.run();
+                Task.WaitAll(con.connections123.ToArray());
                 //   gui.Wait();
 
 
@@ -165,7 +159,7 @@ static void EnableQuickEdit()
             {
                 Directory.GetFiles("servers");
             }
-            catch(DirectoryNotFoundException)
+            catch (DirectoryNotFoundException)
             {
                 Directory.CreateDirectory("servers");
                 File.WriteAllText("servers\\DEFAULT_SERVER_CONFIG_FILE.txt", Resources.Config_strings.default_server);
@@ -186,13 +180,13 @@ static void EnableQuickEdit()
                 init_lang_strings("ENG");
                 menu();
             }
-            
+
         }
         private static void read_conf()
         {
             string[] config_lines = File.ReadAllLines("config.cfg");
             int ite = 0;
-            foreach(string c in config_lines)
+            foreach (string c in config_lines)
             {
                 if (ite == 1) { LANG = c; }
 
@@ -214,7 +208,7 @@ static void EnableQuickEdit()
 
         }
 
- 
+
 
     }
 }

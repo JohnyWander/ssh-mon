@@ -48,7 +48,7 @@ namespace ssh_mon.GUI
         static private bool[] is_set_ok = new bool[Server_amount];
         static private string[] error_string = new string[Server_amount];
 
-        static private int x, y;
+     
 
         //    private static char dot = '\u2022';
 
@@ -186,6 +186,11 @@ namespace ssh_mon.GUI
                             case 2:
                                 option2_deselect_server();
                                 break;
+                            case 3:
+                                Console.Clear();
+                                run();
+                                return Task.CompletedTask;
+                                break;
                         }
                     }
                     else
@@ -295,7 +300,8 @@ namespace ssh_mon.GUI
             {
                 console_color_index = 14;// yellow
             }
-            else if( cpu_int_percentage>80)
+            
+            if( cpu_int_percentage>80)
             {
                 console_color_index = 12; //red
             }
@@ -309,23 +315,27 @@ namespace ssh_mon.GUI
             ram_used[id] = Convert.ToString(used) + "GB";
             ram_free[id] = Convert.ToString(free) + "GB";
 
-            if (ram_percentage_doub <= 50)
+           // Console.WriteLine((int)ram_percentage_doub);
+            if ((int)ram_percentage_doub <= 50)
             {
                 console_color_index_ram = 10;
-            }else if( ram_percentage_doub >50 && cpu_int_percentage <= 80)
+            }else if((int)ram_percentage_doub >50 && (int)cpu_int_percentage <= 80)
             {
                 console_color_index_ram = 14;
             }
-            else if(ram_percentage_doub > 80)
+           
+            if((int)ram_percentage_doub > 80)
             {
+                
                 console_color_index_ram = 12;
             }
 
 
 
 
-            insert_cpu_percentage(cpu_usage,id, console_color_index);
-            insert_ram_percentage(ram_percentage[id], id, ram_total[id], ram_used[id],console_color_index_ram);
+           Task.Run(() => insert_cpu_percentage(cpu_usage,id, console_color_index)).Wait();
+           
+           Task.Run(() => insert_ram_percentage(ram_percentage[id], id, ram_total[id], ram_used[id],console_color_index_ram)).Wait();
 
             return Task.CompletedTask;
         }

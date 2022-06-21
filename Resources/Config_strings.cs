@@ -19,12 +19,6 @@ user=Johnny
 ip=192.168.0.128
 port=22
 enabled=true
-[OPENSSH_PRIV_KEY]
------ BEGIN RSA PRIVATE KEY-----
-MIIEogIBAAKCAQEAikdGpJRMjrbsAq1thMtr8kCrru8ySXayzkr/E05zT+npBKbF
-64SG3DS2I6QzmONllkroitqINPKjWf0xvFpV2e6YQES7tYqdym6y9MW/cw5FiUE0
-T1WZGhmuXnxWfRRLGBCWtlSB2t6r5+H14zdfLUy0Cbe0nHQ/H0+horbu5SRKgrpn
------END RSA PRIVATE KEY-----
 ";
 
 
