@@ -110,15 +110,26 @@ namespace ssh_mon
             byte[] xdw = new byte[] { xd };
             int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw));
 
-
+            string[] files = Directory.GetFiles("servers");
             if (switch_i == 1)
             {
                 DisableQuickEdit();
+                
+                foreach (string f in files)
+                {
+                    if (File.ReadAllLines(f).Contains("[server]"))
+                    {
+                        Already_Encrypted = false;
+                    }
+
+
+                }
+
                 var con = new SSH.connections();
 
                 //   Task cancel = Task.Run(() => Stop(cancel_all));
                 int servers = Directory.GetFiles("servers").Count();
-                con.run(cancel_all);
+                con.run(cancel_all,Already_Encrypted);
                 // Task gui = Task.Run(() => GUI.Default_GUI.run());
                 GUI.Default_GUI.run();
                 Task.WaitAll(con.connections123.ToArray());
@@ -130,7 +141,7 @@ namespace ssh_mon
             if (switch_i == 2)
             {
                 
-                string[] files = Directory.GetFiles("servers");
+               
                 foreach(string f in files)
                 {
                     if (File.ReadAllLines(f).Contains("[server]"))
@@ -199,7 +210,7 @@ namespace ssh_mon
             }
             if (switch_i == 3)
             {
-                string[] files = Directory.GetFiles("servers");
+              
                 foreach (string f in files)
                 {
                     if (File.ReadAllLines(f).Contains("[server]"))
@@ -344,7 +355,7 @@ namespace ssh_mon
 
         }
 
-        private static string input_password()
+        public static string input_password()
         {
             string pass = "";
             ConsoleKey key;

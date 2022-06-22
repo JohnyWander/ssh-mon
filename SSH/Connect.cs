@@ -14,9 +14,9 @@ namespace ssh_mon.SSH
 
         public List<Task> connections123 = new List<Task>();
         public static int xD = 100;
-        public Task run(CancellationTokenSource cancel)
+        public Task run(CancellationTokenSource cancel,bool Already_enrypted)
         {
-            build_serverlist();
+            build_serverlist(Already_enrypted);
 
 
             CancellationTokenSource cts = cancel;
