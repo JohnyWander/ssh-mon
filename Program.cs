@@ -82,17 +82,22 @@ namespace ssh_mon
         }
         private static string LANG;
         static public CancellationTokenSource cancel_all = new CancellationTokenSource();
+        private static bool Already_Encrypted = true;
         static void Main(string[] args)
         {
 
 
-            DisableQuickEdit();
+          
 
 
             init();
             read_conf();
             init_lang_strings(LANG);
+        
+            
+        
             menu();
+        A:
 
 
             ConsoleKeyInfo key = Console.ReadKey();
@@ -108,31 +113,160 @@ namespace ssh_mon
 
             if (switch_i == 1)
             {
-
-
+                DisableQuickEdit();
                 var con = new SSH.connections();
 
                 //   Task cancel = Task.Run(() => Stop(cancel_all));
                 int servers = Directory.GetFiles("servers").Count();
                 con.run(cancel_all);
-
-           
-
-
                 // Task gui = Task.Run(() => GUI.Default_GUI.run());
                 GUI.Default_GUI.run();
                 Task.WaitAll(con.connections123.ToArray());
                 //   gui.Wait();
-
-
-
-
-
-
                 EnableQuickEdit();
 
             }
+
+            if (switch_i == 2)
+            {
+                
+                string[] files = Directory.GetFiles("servers");
+                foreach(string f in files)
+                {
+                    if (File.ReadAllLines(f).Contains("[server]"))
+                    {
+                        Already_Encrypted = false;
+                    }    
+                    
+
+                }
+
+                if(Already_Encrypted == true)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(GUI.Language_strings.language_strings["already_encrypted"]);
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                    goto A;
+                }
+                else
+                {
+                    AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
+                    Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
+                    string password = input_password();
+                    Console.WriteLine("\n"+GUI.Language_strings.language_strings["input_password_confirm"]);
+                    string password_confirm = input_password();
+
+                    if (password != password_confirm)
+                    {
+                        Console.WriteLine(GUI.Language_strings.language_strings["input_password_no_match"]);
+                        goto A;
+                    }
+                    else if( password == password_confirm) {
+
+                        try
+                        {
+                            string[] encryptedStrings = new string[files.Length];
+                            int i = 0;
+                            List<Task> files_to_encrypt = new List<Task>();
+                            foreach (string f in files)
+                            {
+                                files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Encrypt(File.ReadAllText(f), password))));
+                            }
+
+                            Task.WaitAll(files_to_encrypt.ToArray());
+
+                            Already_Encrypted = true;
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine("\n"+GUI.Language_strings.language_strings["encryption_success"]);
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                            goto A;
+                        }
+                        catch(Exception e)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine(GUI.Language_strings.language_strings["encryption_fail"]);
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                    
+                        }
+                    }
+
+
+
+
+                }
+
+
+            }
+            if (switch_i == 3)
+            {
+                string[] files = Directory.GetFiles("servers");
+                foreach (string f in files)
+                {
+                    if (File.ReadAllLines(f).Contains("[server]"))
+                    {
+                        Already_Encrypted = false;
+                    }
+
+
+                }
+
+                if (Already_Encrypted == false)
+                {
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.WriteLine(GUI.Language_strings.language_strings["not_encrypted"]);
+                    Console.ForegroundColor = ConsoleColor.Gray;
+             
+                }
+                else
+                {
+                    try
+                    {
+                        AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
+                        Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
+                        string password = input_password();
+
+
+                        string[] encryptedStrings = new string[files.Length];
+                        int i = 0;
+                        List<Task> files_to_encrypt = new List<Task>();
+                        foreach (string f in files)
+                        {
+                            files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Decrypt(File.ReadAllText(f), password))));
+                        }
+
+                        Task.WaitAll(files_to_encrypt.ToArray());
+
+                        Already_Encrypted = false;
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.WriteLine("\n"+GUI.Language_strings.language_strings["decryption_success"]);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+
+                    }
+                    catch(Exception e)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine(GUI.Language_strings.language_strings["decryption_fail"]);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                      //  Console.WriteLine(GUI.Language_strings.language_strings["press_any"]);
+                       // Console.ReadKey();
+                      //  restart();
+                    }
+
+                }
+
+
+                goto A;
+            }
+
+
         }
+
+        public static void restart()
+        {
+            Console.WriteLine(GUI.Language_strings.language_strings["press_any"]);
+            Console.ReadKey();
+        }
+
         private static void init()
         {
             try
@@ -174,6 +308,8 @@ namespace ssh_mon
             {
                 IDictionary<string, string> lang_strings = GUI.Language_strings.language_strings;
                 Console.WriteLine(lang_strings["start_test"]);
+                Console.WriteLine(lang_strings["encrypt_server_dir"]);
+                Console.WriteLine(lang_strings["decrypt_server_dir"]);
             }
             catch
             {
@@ -208,7 +344,29 @@ namespace ssh_mon
 
         }
 
+        private static string input_password()
+        {
+            string pass = "";
+            ConsoleKey key;
+            do
+            {
+                var keyInfo = Console.ReadKey(intercept: true);
+                key = keyInfo.Key;
 
+                if (key == ConsoleKey.Backspace && pass.Length > 0)
+                {
+                    Console.Write("\b \b");
+                    pass = pass[0..^1];
+                }
+                else if (!char.IsControl(keyInfo.KeyChar))
+                {
+                    Console.Write("*");
+                    pass += keyInfo.KeyChar;
+                }
+            } while (key != ConsoleKey.Enter);
+
+            return pass;
+        }
 
     }
 }

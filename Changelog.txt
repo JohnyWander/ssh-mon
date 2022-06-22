@@ -13,3 +13,6 @@ class isn't "Thread safe" - authentication errors, weird stuff happening,
 messing GUI up
 - Wrapped CPU and ram status edit functions in Task.Run(()=> ..).Wait() to lower "mess up" chance almost to 0
 - Added functionality to reset gui, if somehow gui still gets messed up
+
+
+v1.2.0 - Added possibility to encrypt "servers" folder with AES

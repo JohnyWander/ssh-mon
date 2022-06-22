@@ -13,12 +13,12 @@ namespace ssh_mon.SSH.Tests
 
         public string os;
         public int id;
-        public string cpu_usage { get; set; } 
+        public string cpu_usage { get; private set; } 
         public string cpu_usage_top_process;
 
-        public double ram_total { get; set; }
-        public double ram_used { get; set; }
-        public double ram_free { get; set; }
+        public double ram_total { get;private set; }
+        public double ram_used { get; private set; }
+        public double ram_free { get; private set; }
 
         public string[] cpu_ram_returns;
         public tests(SshClient client,int server_ID)
