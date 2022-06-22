@@ -90,9 +90,9 @@ namespace ssh_mon
           
 
 
-            init();
-            read_conf();
-            init_lang_strings(LANG);
+            init(); // chekcing for folders/ files presence etc.
+            read_conf(); // Reading configuration file
+            init_lang_strings(LANG); // Setting strings to provided language
         
             
         
@@ -109,23 +109,14 @@ namespace ssh_mon
             byte xd = Convert.ToByte(key_c);
             byte[] xdw = new byte[] { xd };
             int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw));
-
             string[] files = Directory.GetFiles("servers");
             if (switch_i == 1)
             {
-                DisableQuickEdit();
+                DisableQuickEdit(); // clicking on console window was messing up gui
                 
-                foreach (string f in files)
-                {
-                    if (File.ReadAllLines(f).Contains("[server]"))
-                    {
-                        Already_Encrypted = false;
-                    }
+             
 
-
-                }
-
-                var con = new SSH.connections();
+                var con = new SSH.connections();// building server list starting tests 
 
                 //   Task cancel = Task.Run(() => Stop(cancel_all));
                 int servers = Directory.GetFiles("servers").Count();
@@ -196,37 +187,25 @@ namespace ssh_mon
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine(GUI.Language_strings.language_strings["encryption_fail"]);
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                    
+                            Console.ForegroundColor = ConsoleColor.Gray;             
                         }
                     }
-
-
-
-
                 }
-
-
             }
             if (switch_i == 3)
-            {
-              
+            {      
                 foreach (string f in files)
                 {
                     if (File.ReadAllLines(f).Contains("[server]"))
                     {
                         Already_Encrypted = false;
                     }
-
-
                 }
-
                 if (Already_Encrypted == false)
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine(GUI.Language_strings.language_strings["not_encrypted"]);
-                    Console.ForegroundColor = ConsoleColor.Gray;
-             
+                    Console.ForegroundColor = ConsoleColor.Gray;             
                 }
                 else
                 {
@@ -242,30 +221,22 @@ namespace ssh_mon
                         List<Task> files_to_encrypt = new List<Task>();
                         foreach (string f in files)
                         {
-                            files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Decrypt(File.ReadAllText(f), password))));
+                            files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Decrypt(File.ReadAllText(f), password)))); // Starting Decryption in parallel
                         }
 
-                        Task.WaitAll(files_to_encrypt.ToArray());
-
+                        Task.WaitAll(files_to_encrypt.ToArray()); // waiting for decryption to end
                         Already_Encrypted = false;
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.WriteLine("\n"+GUI.Language_strings.language_strings["decryption_success"]);
                         Console.ForegroundColor = ConsoleColor.Gray;
-
                     }
                     catch(Exception e)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine(GUI.Language_strings.language_strings["decryption_fail"]);
                         Console.ForegroundColor = ConsoleColor.Gray;
-                      //  Console.WriteLine(GUI.Language_strings.language_strings["press_any"]);
-                       // Console.ReadKey();
-                      //  restart();
                     }
-
                 }
-
-
                 goto A;
             }
 
@@ -336,23 +307,16 @@ namespace ssh_mon
             foreach (string c in config_lines)
             {
                 if (ite == 1) { LANG = c; }
-
                 ite++;
             }
-
-
-
         }
 
         private static void init_lang_strings(string lang)
         {
-
             if (lang == "ENG")
             {
                 GUI.Language_strings.run("ENG");
             }
-
-
         }
 
         public static string input_password()

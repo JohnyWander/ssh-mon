@@ -21,10 +21,6 @@ namespace ssh_mon.SSH
 
             CancellationTokenSource cts = cancel;
 
-
-
-
-
             int ite = 0;
             foreach (var serv in server_DICT)
             {
