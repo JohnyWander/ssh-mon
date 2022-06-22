@@ -110,6 +110,20 @@ namespace ssh_mon
             byte[] xdw = new byte[] { xd };
             int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw));
             string[] files = Directory.GetFiles("servers");
+
+            foreach (string f in files)
+            {
+                if (File.ReadAllLines(f).Contains("[server]"))
+                {
+                    Already_Encrypted = false;
+                }
+
+
+            }
+
+
+
+
             if (switch_i == 1)
             {
                 DisableQuickEdit(); // clicking on console window was messing up gui
