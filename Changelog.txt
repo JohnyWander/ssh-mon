@@ -17,3 +17,4 @@ messing GUI up
 
 v1.2.0 - Added possibility to encrypt "servers" folder with AES
 v1.2.1 - Added possibility to decrypt server files "in air" during serverlist building
+v1.2.2 - Started work with Custom Tests in separate .dlls
