@@ -10,5 +10,11 @@
   <ItemGroup>
     <PackageReference Include="SSH.NET" Version="2020.0.2" />
   </ItemGroup>
-
+	<ItemGroup>
+		<Content Remove="Modules_assemblies\**" />
+		<Compile Remove="Modules_assemblies\**" />
+		<EmbeddedResource Remove="Modules_assemblies\**" />
+		<None Remove="Modules_assemblies\**" />
+	</ItemGroup>
+	
 </Project>
