@@ -93,7 +93,7 @@ namespace ssh_mon
             init(); // chekcing for folders/ files presence etc.
             read_conf(); // Reading configuration file
             init_lang_strings(LANG); // Setting strings to provided language
-        
+           // Modules.LoadAssemblies.run();
             
         
             menu();
@@ -265,6 +265,14 @@ namespace ssh_mon
 
         private static void init()
         {
+            try
+            {
+                Directory.GetFiles("modules");
+            }
+            catch
+            {
+                Directory.CreateDirectory("modules");
+            }
             try
             {
                 Directory.GetFiles("lang");
