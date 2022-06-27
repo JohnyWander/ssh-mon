@@ -20,8 +20,11 @@ namespace ssh_mon.Modules
             int ite = 0;
             foreach(string assembly in module_assemblies)
             {
-                ModuleAssembly.Add(ite, new Modules(assembly));
-                ite++;
+                if (!assembly.Contains(".conf"))
+                {
+                    ModuleAssembly.Add(ite, new Modules(assembly));
+                    ite++;
+                }
             }
 
 
@@ -64,6 +67,13 @@ namespace ssh_mon.Modules
 
         }
 
+        public void __run_test()
+        {
+            var run_test = module_main_class.GetMethod("run_test");
+            object restult = run_test.Invoke(activator, null);
+        }
+
+
 
         public bool __get_test_failed()
         {
@@ -93,6 +103,12 @@ namespace ssh_mon.Modules
         {
             var set_output = module_main_class.GetMethod("set_output", new Type[] { typeof(string[]) });
             object result = set_output.Invoke(activator, commands_outputs);
+        }
+        public int get_iteration_time()
+        {
+            var get_iteration_time = module_main_class.GetMethod("get_iteration_time");
+            object result = get_iteration_time.Invoke(activator, null);
+            return (int)result;
         }
 
 

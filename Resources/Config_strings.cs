@@ -8,8 +8,10 @@ namespace ssh_mon.Resources
 {
     public static class Config_strings
     {
-        public static string default_conf { get; } = @"[Language] - EN,PL Supported
-EN
+        public static string default_conf { get; } = @"[Language] - ENG Supported for now
+ENG
+[Timers]
+cpu_ram_check timer(ms)=2000
 ";
 
 

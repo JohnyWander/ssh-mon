@@ -12,6 +12,7 @@ namespace Mount_check
         private string error_messege = "MountCheck Failed:";
         private string[] ssh_command_outputs;
 
+        private int iteration_time = 10000;
 
         private List<string> names = new List<string>();
         private List<string[]> commands_and_output = new List<string[]>();
@@ -24,9 +25,29 @@ namespace Mount_check
 
             names = ReadConf.applies_to;
             commands_and_output = ReadConf.commands_and_outputs;
+            
 
 
 
+
+
+        }
+
+        public void run_test()
+        {
+            error_messege = "MountCheck Failed:";
+            IList<string> outputs = new List<string>();
+            foreach(string[] array in commands_and_output)
+            {
+                outputs.Add(array[1]);
+            }
+
+            for (int i = 0; i <= outputs.Count; i++)
+            {
+                if (!ssh_command_outputs[i].Contains(outputs[i])){
+                    error_messege+= "Command "+i+"# failed! ";
+                }
+            }
 
 
         }
@@ -57,6 +78,12 @@ namespace Mount_check
         {
             ssh_command_outputs = output;
         }
+
+        public int get_iteration_time()
+        {
+            return iteration_time;
+        }
+
 
     }
 }

@@ -91,9 +91,12 @@ namespace ssh_mon
 
 
             init(); // chekcing for folders/ files presence etc.
-            read_conf(); // Reading configuration file
+            Readconf.run(); ; // Reading configuration file
+            LANG = Readconf.LANG;
             init_lang_strings(LANG); // Setting strings to provided language
-           // Modules.LoadAssemblies.run();
+            Modules.LoadAssemblies.run();
+
+        
             
         
             menu();
@@ -322,16 +325,7 @@ namespace ssh_mon
             }
 
         }
-        private static void read_conf()
-        {
-            string[] config_lines = File.ReadAllLines("config.cfg");
-            int ite = 0;
-            foreach (string c in config_lines)
-            {
-                if (ite == 1) { LANG = c; }
-                ite++;
-            }
-        }
+       
 
         private static void init_lang_strings(string lang)
         {

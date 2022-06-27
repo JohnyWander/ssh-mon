@@ -8,6 +8,8 @@ namespace Mount_check
 {
     internal static class initialize
     {
+        private static string path_conf = "modules\\Mount_check.conf";
+
         private static string default_conf = @"[test apllies to]- servernames in servers folder
 test1,test2,test3
 [\test applies to]
@@ -23,11 +25,11 @@ false
         {
             try
             {
-                File.ReadAllText("module.conf");
+                File.ReadAllText(path_conf);
             }
             catch
             {
-                File.WriteAllText("module.conf", default_conf);
+                File.WriteAllText(path_conf, default_conf);
             }
 
 

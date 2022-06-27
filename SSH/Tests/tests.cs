@@ -5,11 +5,12 @@ using System.Text;
 using System.Threading.Tasks;
 using Renci.SshNet;
 using System.Timers;
-
+using System.Reflection;
 namespace ssh_mon.SSH.Tests
 {
     public class tests
     {
+       
 
         public string os;
         public int id;
@@ -31,10 +32,78 @@ namespace ssh_mon.SSH.Tests
             System.Timers.Timer Get_cpu_ram= new System.Timers.Timer();
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => cpu_usage=get_cpu_ram_usage(sender, e,client));
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id,cpu_usage,ram_total,ram_used,ram_free));
-            Get_cpu_ram.Interval = 2000;
+            Get_cpu_ram.Interval = Readconf.cpu_ram_timer;
             Get_cpu_ram.Enabled = true;
-            
+
+
+            foreach (var modules in ssh_mon.Modules.LoadAssemblies.ModuleAssembly)
+            {
+                string name = connections.names[id];
+                List<string> names = modules.Value.__get_names();
+
+                if (names.Contains(name))
+                {
+                    Task.Run(() =>
+                    {
+                        List<string[]> commands_and_outputs = new List<string[]>();
+                        commands_and_outputs = modules.Value.__get_commands_and_outputs();
+                        string[] commands = new string[commands_and_outputs.Count];
+                        int ite = 0;
+                        foreach (string[] array in commands_and_outputs)
+                        {
+                            commands[ite] = array[0];
+                            Console.WriteLine(array[0]);
+                            ite++;
+                        }
+
+
+                        int iteration_time = modules.Value.get_iteration_time();
+                        System.Timers.Timer run_custom_module_test = new System.Timers.Timer();
+                        run_custom_module_test.Elapsed += new ElapsedEventHandler((sender, e) =>  custom_module_test_event_run(sender, e, client, modules.Value,commands));
+                        run_custom_module_test.Interval = iteration_time;
+                        Get_cpu_ram.Enabled = true;
+
+
+
            
+
+
+
+
+
+                    });
+                }
+            }
+           
+        }
+
+        private void custom_module_test_event_run(object source,ElapsedEventArgs e,SshClient client,ssh_mon.Modules.Modules module,string[]commands)
+        {
+            string[] outputs = new string[commands.Length];
+            int ite = 0;
+            foreach (string command in commands)
+            {
+                var cmd = client.CreateCommand(command);
+                outputs[ite] = cmd.Execute();
+                ite++;
+            }
+
+            module.set_output(outputs);
+            module.__run_test();
+            bool failed = module.__get_test_failed();
+
+            if (failed)
+            {
+                ssh_mon.GUI.Default_GUI.is_error_present[id] = true;
+                ssh_mon.GUI.Default_GUI.error_string[id] = module.__get_Error_messege();
+                Console.WriteLine(module.__get_Error_messege());
+            }
+
+
+
+
+
+
         }
 
         private string get_cpu_ram_usage(object source, ElapsedEventArgs e, SshClient client)

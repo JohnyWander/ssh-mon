@@ -5,12 +5,13 @@ namespace Mount_check
 {
     internal static class ReadConf
     {
-       public static List<string> applies_to = new List<string>();
+        private static string path_conf = "modules\\Mount_check.conf";
+        public static List<string> applies_to = new List<string>();
        public static List<string[]> commands_and_outputs = new List<string[]>();
 
         public static void run()
         {
-            string[] lines = File.ReadAllLines("module.conf");
+            string[] lines = File.ReadAllLines(path_conf);
 
             foreach(string applies in lines[1].Split(','))
             {

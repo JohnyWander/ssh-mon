@@ -44,9 +44,9 @@ namespace ssh_mon.GUI
         static private int[] pos_y2_selection = new int[Server_amount];//
 
 
-        static private bool[] is_error_present = new bool[Server_amount];
+        static public bool[] is_error_present = new bool[Server_amount];
         static private bool[] is_set_ok = new bool[Server_amount];
-        static private string[] error_string = new string[Server_amount];
+        static public string[] error_string = new string[Server_amount];
 
      
 
