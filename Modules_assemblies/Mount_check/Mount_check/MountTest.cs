@@ -10,7 +10,7 @@ namespace Mount_check
     {
         private bool Test_failed = false;
         private string error_messege = "MountCheck Failed:";
-        private string[] ssh_command_outputs;
+        private List<string> ssh_command_outputs = new List<string>();
 
         private int iteration_time = 10000;
 
@@ -35,6 +35,7 @@ namespace Mount_check
 
         public void run_test()
         {
+            Test_failed = false;
             error_messege = "MountCheck Failed:";
             IList<string> outputs = new List<string>();
             foreach(string[] array in commands_and_output)
@@ -42,11 +43,20 @@ namespace Mount_check
                 outputs.Add(array[1]);
             }
 
-            for (int i = 0; i <= outputs.Count; i++)
+            for (int i = 0; i < outputs.Count; i++)
             {
-                if (!ssh_command_outputs[i].Contains(outputs[i])){
-                    error_messege+= "Command "+i+"# failed! ";
+                string c_o = ssh_command_outputs[i];
+                string o = outputs[i];
+           
+                if(!c_o.Contains(o))
+                {
+                    Test_failed = true;
                 }
+
+              //  if (!ssh_command_outputs[i].Contains(outputs[i])){
+                //    error_messege+= "Command "+i+"# failed! ";
+                  // Test_failed = true;
+                //}
             }
 
 
@@ -74,9 +84,9 @@ namespace Mount_check
         }
         
 
-        public void set_output(string[] output)
+        public void set_output(string output)
         {
-            ssh_command_outputs = output;
+            ssh_command_outputs.Add(output);
         }
 
         public int get_iteration_time()

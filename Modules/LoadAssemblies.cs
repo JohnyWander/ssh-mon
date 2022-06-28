@@ -99,10 +99,17 @@ namespace ssh_mon.Modules
             object result = get_commands_and_outputs.Invoke(activator, null);
             return (List<string[]>)result;
         }
-        public void set_output(string[] commands_outputs)
+        public void set_output(string commands_outputs)
         {
-            var set_output = module_main_class.GetMethod("set_output", new Type[] { typeof(string[]) });
-            object result = set_output.Invoke(activator, commands_outputs);
+            try {
+                object[] parameters = new object[1];
+                parameters[0] = commands_outputs;
+                var set_output = module_main_class.GetMethod("set_output", new Type[] { typeof(string) });
+                object result = set_output.Invoke(activator, parameters);
+            } catch(Exception e)
+            {
+                Console.WriteLine(e.Message + "\n" + e.StackTrace);
+            }
         }
         public int get_iteration_time()
         {

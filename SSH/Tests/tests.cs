@@ -52,7 +52,7 @@ namespace ssh_mon.SSH.Tests
                         foreach (string[] array in commands_and_outputs)
                         {
                             commands[ite] = array[0];
-                            Console.WriteLine(array[0]);
+                         //   Console.WriteLine(array[0]);
                             ite++;
                         }
 
@@ -61,7 +61,7 @@ namespace ssh_mon.SSH.Tests
                         System.Timers.Timer run_custom_module_test = new System.Timers.Timer();
                         run_custom_module_test.Elapsed += new ElapsedEventHandler((sender, e) =>  custom_module_test_event_run(sender, e, client, modules.Value,commands));
                         run_custom_module_test.Interval = iteration_time;
-                        Get_cpu_ram.Enabled = true;
+                        run_custom_module_test.Enabled = true;
 
 
 
@@ -79,28 +79,48 @@ namespace ssh_mon.SSH.Tests
 
         private void custom_module_test_event_run(object source,ElapsedEventArgs e,SshClient client,ssh_mon.Modules.Modules module,string[]commands)
         {
-            string[] outputs = new string[commands.Length];
-            int ite = 0;
-            foreach (string command in commands)
+            try
             {
-                var cmd = client.CreateCommand(command);
-                outputs[ite] = cmd.Execute();
-                ite++;
-            }
+                //  Console.WriteLine("XDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+                string[] outputs = new string[commands.Length];
+                int ite = 0;
+                foreach (string command in commands)
+                {
+                    var cmd = client.CreateCommand(command);
+                    outputs[ite] = cmd.Execute();
+                    module.set_output(outputs[ite]);
+                    ite++;
+                }
 
-            module.set_output(outputs);
-            module.__run_test();
-            bool failed = module.__get_test_failed();
 
-            if (failed)
+                module.__run_test();
+                bool failed = module.__get_test_failed();
+
+                if (failed)
+                {
+                    ssh_mon.GUI.Default_GUI.is_error_present[id] = true;
+                    ssh_mon.GUI.Default_GUI.error_string[id] = module.__get_Error_messege();
+                    Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Red(id)).Wait() ;
+                    Console.WriteLine(id);
+                }
+                else
+                {
+                    ssh_mon.GUI.Default_GUI.is_error_present[id] = false;
+                    ssh_mon.GUI.Default_GUI.error_string[id] = "";
+                    Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Green(id)).Wait() ;
+                    //  ssh_mon.GUI.Default_GUI.Set_status(null,null);
+                    Console.WriteLine(id);
+
+
+                }
+
+            }catch(Exception ex)
             {
-                ssh_mon.GUI.Default_GUI.is_error_present[id] = true;
-                ssh_mon.GUI.Default_GUI.error_string[id] = module.__get_Error_messege();
-                Console.WriteLine(module.__get_Error_messege());
+                Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
+                Console.ReadLine();
             }
-
-
-
+            
+           
 
 
 

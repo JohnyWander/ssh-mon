@@ -97,7 +97,7 @@ namespace ssh_mon.GUI
 
         public static void Set_status(object source,ElapsedEventArgs e)
         {
-
+         //   Console.WriteLine("ASS");
             foreach (KeyValuePair<int, string> server in SSH.connections.names)
             {
                 if (is_error_present[server.Key] == true)
@@ -121,7 +121,7 @@ namespace ssh_mon.GUI
             }
 
         }
-            private static void Set_Red(int number)
+            public static void Set_Red(int number)
             {
                 try
                 {
@@ -136,7 +136,7 @@ namespace ssh_mon.GUI
                 }
             }
 
-            private static void Set_Green(int number)
+            public static void Set_Green(int number)
             {
                 try
                 {
