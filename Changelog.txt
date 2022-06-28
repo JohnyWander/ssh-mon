@@ -17,4 +17,9 @@ messing GUI up
 
 v1.2.0 - Added possibility to encrypt "servers" folder with AES
 v1.2.1 - Added possibility to decrypt server files "in air" during serverlist building
-v1.2.2 - Started work with Custom Tests in separate .dlls
+v1.2.2 - Started work with Custom Tests in separate .dll
+
+v1.3.0 -
+- Added posibility to use custom .dll as "modules" to process output from ssh server. Then "module"
+can indicate if status should change to error with custom error code. To See how module dll should look and work see "Examples folder"
+- Made cpu/ram data update timer configurable, please note that values below "1000ms" are NOT good idea

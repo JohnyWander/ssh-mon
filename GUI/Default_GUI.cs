@@ -44,9 +44,9 @@ namespace ssh_mon.GUI
         static private int[] pos_y2_selection = new int[Server_amount];//
 
 
-        static private bool[] is_error_present = new bool[Server_amount];
+        static public bool[] is_error_present = new bool[Server_amount];
         static private bool[] is_set_ok = new bool[Server_amount];
-        static private string[] error_string = new string[Server_amount];
+        static public string[] error_string = new string[Server_amount];
 
      
 
@@ -97,7 +97,7 @@ namespace ssh_mon.GUI
 
         public static void Set_status(object source,ElapsedEventArgs e)
         {
-
+         //   Console.WriteLine("ASS");
             foreach (KeyValuePair<int, string> server in SSH.connections.names)
             {
                 if (is_error_present[server.Key] == true)
@@ -121,7 +121,7 @@ namespace ssh_mon.GUI
             }
 
         }
-            private static void Set_Red(int number)
+            public static void Set_Red(int number)
             {
                 try
                 {
@@ -136,7 +136,7 @@ namespace ssh_mon.GUI
                 }
             }
 
-            private static void Set_Green(int number)
+            public static void Set_Green(int number)
             {
                 try
                 {
