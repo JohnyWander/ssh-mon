@@ -219,7 +219,7 @@ namespace ssh_mon
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine(GUI.Language_strings.language_strings["not_encrypted"]);
-                    Console.ForegroundColor = ConsoleColor.Gray;             
+                    Console.ForegroundColor = ConsoleColor.Gray;
                 }
                 else
                 {
@@ -232,17 +232,45 @@ namespace ssh_mon
 
                         string[] encryptedStrings = new string[files.Length];
                         int i = 0;
+                        bool fail = false;
                         List<Task> files_to_encrypt = new List<Task>();
                         foreach (string f in files)
                         {
-                            files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Decrypt(File.ReadAllText(f), password)))); // Starting Decryption in parallel
-                        }
+                            files_to_encrypt.Add(Task.Run(() =>
+                            {
+                                string decrypted = encrypt.Decrypt(File.ReadAllText(f), password);
+
+                                if (decrypted.Length != 0)
+                                {
+                                    File.WriteAllText(f, decrypted);
+                                }
+                                else
+                                {
+                                    fail = true;
+                                }
+
+
+
+
+                    })); // Starting Decryption in parallel
+                }    
 
                         Task.WaitAll(files_to_encrypt.ToArray()); // waiting for decryption to end
-                        Already_Encrypted = false;
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("\n"+GUI.Language_strings.language_strings["decryption_success"]);
-                        Console.ForegroundColor = ConsoleColor.Gray;
+
+                        if (fail == false)
+                        {
+
+                            Already_Encrypted = false;
+                            Console.ForegroundColor = ConsoleColor.Green;
+                            Console.WriteLine("\n" + GUI.Language_strings.language_strings["decryption_success"]);
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("\n"+GUI.Language_strings.language_strings["decryption_fail"]);
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                        }
                     }
                     catch(Exception e)
                     {
