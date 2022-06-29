@@ -29,7 +29,7 @@ namespace ssh_mon
 
         [DllImport("Kernel32.dll", SetLastError = true)]
         public static extern IntPtr GetStdHandle(int nStdHandle);
-
+        
         /// <summary>
         /// This flag enables the user to use the mouse to select and edit text. To enable
         /// this option, you must also set the ExtendedFlags flag.
@@ -85,29 +85,16 @@ namespace ssh_mon
         private static bool Already_Encrypted = true;
         static void Main(string[] args)
         {
-
-
-          
-
-
             init(); // chekcing for folders/ files presence etc.
             Readconf.run(); ; // Reading configuration file
             LANG = Readconf.LANG;
             init_lang_strings(LANG); // Setting strings to provided language
-            Modules.LoadAssemblies.run();
+            Modules.LoadAssemblies.run(); // Loading custom modules 
+            menu(); // main menu
 
-        
-            
-        
-            menu();
         A:
-
-
             ConsoleKeyInfo key = Console.ReadKey();
             Console.Write("\b \b");
-
-
-
             char key_c = key.KeyChar;
             byte xd = Convert.ToByte(key_c);
             byte[] xdw = new byte[] { xd };
@@ -120,172 +107,145 @@ namespace ssh_mon
                 {
                     Already_Encrypted = false;
                 }
-
-
             }
 
 
-
-
-            if (switch_i == 1)
+            switch (switch_i)
             {
-                DisableQuickEdit(); // clicking on console window was messing up gui
-                
-             
+                case 1:
+                    DisableQuickEdit(); // clicking on console window was messing up gui
+                    var con = new SSH.connections();//
+                    int servers = Directory.GetFiles("servers").Count();
+                    con.run(cancel_all, Already_Encrypted);// building server list, starting tests
+                    GUI.Default_GUI.run();
+                    Task.WaitAll(con.connections123.ToArray()); // Waiting for Connections to end                   
+                    EnableQuickEdit();
+                break;
+                case 2:
 
-                var con = new SSH.connections();// building server list starting tests 
-
-                //   Task cancel = Task.Run(() => Stop(cancel_all));
-                int servers = Directory.GetFiles("servers").Count();
-                con.run(cancel_all,Already_Encrypted);
-                // Task gui = Task.Run(() => GUI.Default_GUI.run());
-                GUI.Default_GUI.run();
-                Task.WaitAll(con.connections123.ToArray());
-                //   gui.Wait();
-                EnableQuickEdit();
-
-            }
-
-            if (switch_i == 2)
-            {
-                
-               
-                foreach(string f in files)
-                {
-                    if (File.ReadAllLines(f).Contains("[server]"))
+                    foreach (string f in files)
                     {
-                        Already_Encrypted = false;
-                    }    
-                    
-
-                }
-
-                if(Already_Encrypted == true)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(GUI.Language_strings.language_strings["already_encrypted"]);
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                    goto A;
-                }
-                else
-                {
-                    AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
-                    Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
-                    string password = input_password();
-                    Console.WriteLine("\n"+GUI.Language_strings.language_strings["input_password_confirm"]);
-                    string password_confirm = input_password();
-
-                    if (password != password_confirm)
+                        if (File.ReadAllLines(f).Contains("[server]"))
+                        {
+                            Already_Encrypted = false;
+                        }
+                    }
+                    if (Already_Encrypted == true)
                     {
-                        Console.WriteLine(GUI.Language_strings.language_strings["input_password_no_match"]);
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine(GUI.Language_strings.language_strings["already_encrypted"]);
+                        Console.ForegroundColor = ConsoleColor.Gray;
                         goto A;
                     }
-                    else if( password == password_confirm) {
-
-                        try
-                        {
-                            string[] encryptedStrings = new string[files.Length];
-                            int i = 0;
-                            List<Task> files_to_encrypt = new List<Task>();
-                            foreach (string f in files)
-                            {
-                                files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Encrypt(File.ReadAllText(f), password))));
-                            }
-
-                            Task.WaitAll(files_to_encrypt.ToArray());
-
-                            Already_Encrypted = true;
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine("\n"+GUI.Language_strings.language_strings["encryption_success"]);
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            goto A;
-                        }
-                        catch(Exception e)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine(GUI.Language_strings.language_strings["encryption_fail"]);
-                            Console.ForegroundColor = ConsoleColor.Gray;             
-                        }
-                    }
-                }
-            }
-            if (switch_i == 3)
-            {      
-                foreach (string f in files)
-                {
-                    if (File.ReadAllLines(f).Contains("[server]"))
-                    {
-                        Already_Encrypted = false;
-                    }
-                }
-                if (Already_Encrypted == false)
-                {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(GUI.Language_strings.language_strings["not_encrypted"]);
-                    Console.ForegroundColor = ConsoleColor.Gray;
-                }
-                else
-                {
-                    try
+                    else
                     {
                         AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
                         Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
                         string password = input_password();
-
-
-                        string[] encryptedStrings = new string[files.Length];
-                        int i = 0;
-                        bool fail = false;
-                        List<Task> files_to_encrypt = new List<Task>();
-                        foreach (string f in files)
+                        Console.WriteLine("\n" + GUI.Language_strings.language_strings["input_password_confirm"]);
+                        string password_confirm = input_password();
+                        if (password != password_confirm)
                         {
-                            files_to_encrypt.Add(Task.Run(() =>
-                            {
-                                string decrypted = encrypt.Decrypt(File.ReadAllText(f), password);
-
-                                if (decrypted.Length != 0)
-                                {
-                                    File.WriteAllText(f, decrypted);
-                                }
-                                else
-                                {
-                                    fail = true;
-                                }
-
-
-
-
-                    })); // Starting Decryption in parallel
-                }    
-
-                        Task.WaitAll(files_to_encrypt.ToArray()); // waiting for decryption to end
-
-                        if (fail == false)
-                        {
-
-                            Already_Encrypted = false;
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine("\n" + GUI.Language_strings.language_strings["decryption_success"]);
-                            Console.ForegroundColor = ConsoleColor.Gray;
+                            Console.WriteLine(GUI.Language_strings.language_strings["input_password_no_match"]);
+                            goto A;
                         }
-                        else
+                        else if (password == password_confirm)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("\n"+GUI.Language_strings.language_strings["decryption_fail"]);
-                            Console.ForegroundColor = ConsoleColor.Gray;
+                            try
+                            {
+                                string[] encryptedStrings = new string[files.Length];
+                                int i = 0;
+                                List<Task> files_to_encrypt = new List<Task>();
+                                foreach (string f in files)
+                                {
+                                    files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Encrypt(File.ReadAllText(f), password)))); // encrypting files simultaneously
+                                }
+                                Task.WaitAll(files_to_encrypt.ToArray()); // Waiting For encryption processes to end
+                                Already_Encrypted = true;
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine("\n" + GUI.Language_strings.language_strings["encryption_success"]);// if encryption worked
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                                goto A;
+                            }
+                            catch (Exception e)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine(GUI.Language_strings.language_strings["encryption_fail"]); // if encryption failed
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                            }
                         }
                     }
-                    catch(Exception e)
+                break;
+                case 3:
+                    foreach (string f in files)
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(GUI.Language_strings.language_strings["decryption_fail"]);
+                        if (File.ReadAllLines(f).Contains("[server]"))
+                        {
+                            Already_Encrypted = false;
+                        }
+                    }
+                    if (Already_Encrypted == false)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.WriteLine(GUI.Language_strings.language_strings["not_encrypted"]);
                         Console.ForegroundColor = ConsoleColor.Gray;
                     }
-                }
-                goto A;
+                    else
+                    {
+                        try
+                        {
+                            AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
+                            Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
+                            string password = input_password();
+
+
+                            string[] encryptedStrings = new string[files.Length];
+                            int i = 0;
+                            bool fail = false;
+                            List<Task> files_to_encrypt = new List<Task>();
+                            foreach (string f in files)
+                            {
+                                files_to_encrypt.Add(Task.Run(() =>
+                                {
+                                    string decrypted = encrypt.Decrypt(File.ReadAllText(f), password); //decryption simultaneously
+
+                                    if (decrypted.Length != 0)
+                                    {
+                                        File.WriteAllText(f, decrypted);
+                                    }
+                                    else
+                                    {
+                                        fail = true;
+                                    }
+                                })); // Starting Decryption in parallel
+                            }
+
+                            Task.WaitAll(files_to_encrypt.ToArray()); // waiting for decryption to end
+
+                            if (fail == false)
+                            {
+                                Already_Encrypted = false;
+                                Console.ForegroundColor = ConsoleColor.Green;
+                                Console.WriteLine("\n" + GUI.Language_strings.language_strings["decryption_success"]);
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                            }
+                            else
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("\n" + GUI.Language_strings.language_strings["decryption_fail"]);
+                                Console.ForegroundColor = ConsoleColor.Gray;
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine(GUI.Language_strings.language_strings["decryption_fail"]);
+                            Console.ForegroundColor = ConsoleColor.Gray;
+                        }
+                    }
+                    goto A;
+                    break;
             }
-
-
         }
 
         public static void restart()
@@ -296,41 +256,20 @@ namespace ssh_mon
 
         private static void init()
         {
-            try
-            {
-                Directory.GetFiles("modules");
-            }
-            catch
-            {
-                Directory.CreateDirectory("modules");
-            }
-            try
-            {
-                Directory.GetFiles("lang");
+            try { Directory.GetFiles("modules");}
+            catch{ Directory.CreateDirectory("modules");}
 
-            }
-            catch (DirectoryNotFoundException)
-            {
-                Directory.CreateDirectory("lang");
-                File.WriteAllText("lang\\ENG.lang", Resources.Config_strings.default_lang);
-            }
+            try { Directory.GetFiles("lang"); }
+            catch (DirectoryNotFoundException) { Directory.CreateDirectory("lang"); File.WriteAllText("lang\\ENG.lang", Resources.Config_strings.default_lang); }
 
-            try
-            {
-                File.OpenRead("config.cfg");
-            }
-            catch (FileNotFoundException)
-            {
-                File.WriteAllText("config.cfg", Resources.Config_strings.default_conf);
-            }
 
-            try
-            {
-                Directory.GetFiles("servers");
-            }
-            catch (DirectoryNotFoundException)
-            {
-                Directory.CreateDirectory("servers");
+            try { File.OpenRead("config.cfg"); }
+            catch (FileNotFoundException) { File.WriteAllText("config.cfg", Resources.Config_strings.default_conf); }
+            
+               
+
+            try { Directory.GetFiles("servers");}
+            catch (DirectoryNotFoundException){ Directory.CreateDirectory("servers");
                 File.WriteAllText("servers\\DEFAULT_SERVER_CONFIG_FILE.txt", Resources.Config_strings.default_server);
             }
 
