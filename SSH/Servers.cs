@@ -52,15 +52,11 @@ namespace ssh_mon.SSH
 
 
 
-                            if (port != "22")
-                            {
-                                ip += ":" + port;
-                            }
 
                             if (enabled_Aes == true)
                             {
 
-                                server_DICT.Add(name_Aes, new Server(name_Aes, ip_Aes, login_Aes, key_Aes));
+                                server_DICT.Add(name_Aes, new Server(name_Aes, ip_Aes,port_Aes ,login_Aes, key_Aes));
 
                             }
                         }
@@ -85,15 +81,11 @@ namespace ssh_mon.SSH
 
 
 
-                            if (port != "22")
-                            {
-                                ip += ":" + port;
-                            }
 
                             if (enabled == true)
                             {
 
-                                server_DICT.Add(name, new Server(name, ip, login, key));
+                                server_DICT.Add(name, new Server(name, ip,port, login, key));
 
                             }
                         }
@@ -127,13 +119,14 @@ namespace ssh_mon.SSH
         public string user { get; private set; }
         public string keystr { get; private set; }
 
-        public Server(string namec,string ipc,string userc, string keystrc)
+        public string port { get; private set; }
+        public Server(string namec,string ipc,string portc,string userc, string keystrc)
         {
             name = namec;
             ip = ipc;
             user = userc;
             keystr = keystrc;
-
+            port = portc;
         }
 
 

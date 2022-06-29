@@ -23,3 +23,8 @@ v1.3.0 -
 - Added posibility to use custom .dll as "modules" to process output from ssh server. Then "module"
 can indicate if status should change to error with custom error code. To See how module dll should look and work see "Examples folder"
 - Made cpu/ram data update timer configurable, please note that values below "1000ms" are NOT good idea
+v1.3.1-
+-Fixed bug- bad password during decryption caused data to disappear
+-Fixed using custom ports
+-Finally made some Readme
+-Created folder for examples

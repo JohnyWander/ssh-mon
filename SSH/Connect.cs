@@ -37,7 +37,7 @@ namespace ssh_mon.SSH
                 PrivateKeyFile pvk = new PrivateKeyFile(Key);
 
 
-                ConnectionInfo conn = new ConnectionInfo(SERVER.ip, SERVER.user, new AuthenticationMethod[]
+                ConnectionInfo conn = new ConnectionInfo(SERVER.ip,Convert.ToInt32(SERVER.port.Trim()), SERVER.user, new AuthenticationMethod[]
                 {
                 new PrivateKeyAuthenticationMethod(SERVER.user,pvk)
                 });

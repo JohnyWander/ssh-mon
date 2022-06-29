@@ -101,7 +101,7 @@ namespace ssh_mon.SSH.Tests
                     ssh_mon.GUI.Default_GUI.is_error_present[id] = true;
                     ssh_mon.GUI.Default_GUI.error_string[id] = module.__get_Error_messege();
                     Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Red(id)).Wait() ;
-                    Console.WriteLine(id);
+                  //  Console.WriteLine(id);
                 }
                 else
                 {
@@ -109,7 +109,7 @@ namespace ssh_mon.SSH.Tests
                     ssh_mon.GUI.Default_GUI.error_string[id] = "";
                     Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Green(id)).Wait() ;
                     //  ssh_mon.GUI.Default_GUI.Set_status(null,null);
-                    Console.WriteLine(id);
+                //    Console.WriteLine(id);
 
 
                 }
