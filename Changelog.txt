@@ -35,3 +35,7 @@ v1.3.2-
 v1.3.3 - even more unspaghettification
 -Fixed bug causing module status update mess up the gui
 -Fixed bug causing program to crash after entering the password during "in-air" decryption
+
+
+v1.3.4
+-added possibility to run specified command when test form custom module fails

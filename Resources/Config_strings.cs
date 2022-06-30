@@ -36,10 +36,15 @@ decryption_success=Decryption was successful
 decryption_fail=Decryption failed! Wrong Password?
 press_any=Press any key to restart
 [Second_menu]
+select_server_menu=1. Select server
+deselect_server_menu=2. Deselect server
+restart_gui=3. Restart GUI
+execute_fix_command_menu=f - execute fix command for selected server
 select_server=Please enter server ID
 [Warns]
 already_encrypted=Servers directory seems to be already encrypted! Cancelling...
 not_encrypted=Servers directory seems to not be encrypted! Cancelling...
+execute_fix_command=Try to Execute fix command?
 [Exceptions]
 server_config_error=Something is not ok with the server configuration file ! :
 ";

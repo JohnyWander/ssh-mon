@@ -17,7 +17,9 @@ namespace Mount_check
         private List<string> names = new List<string>();
         private List<string[]> commands_and_output = new List<string[]>();
 
-        
+        public static bool is_fix_commands_avaiable { get; private set; } = false;
+        private static string fix_command;
+
         public Module()
         {
             initialize.run();
@@ -25,8 +27,9 @@ namespace Mount_check
 
             names = ReadConf.applies_to;
             commands_and_output = ReadConf.commands_and_outputs;
-            
 
+            is_fix_commands_avaiable = ReadConf.is_fix_commands_avaiable;
+            fix_command = ReadConf.fix_command;
 
 
 
@@ -108,6 +111,16 @@ namespace Mount_check
         {
             ssh_command_outputs.Clear();
             Test_failed = false;
+        }
+
+        public bool get_if_fix_command_is_avaiable()
+        {
+            return is_fix_commands_avaiable;
+        }
+
+        public string get_fix_command()
+        {
+            return fix_command;
         }
 
     }

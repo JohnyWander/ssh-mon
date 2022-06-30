@@ -113,6 +113,23 @@ namespace ssh_mon.Modules
         }
 
 
+        public bool __get_if_fix_command_is_avaiable()
+        {
+            var get_if_fix_command_is_avaiable = module_main_class.GetMethod("get_if_fix_command_is_avaiable");
+            object result = get_if_fix_command_is_avaiable.Invoke(activator, null);
+            return (bool)result;
+        }
+
+
+        public string __get_fix_command()
+        {
+            var get_fix_command = module_main_class.GetMethod("get_fix_command");
+            object result = get_fix_command.Invoke(activator, null);
+            return (string)result;
+        }
+
+
+
     }
 
 

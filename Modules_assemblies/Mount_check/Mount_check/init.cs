@@ -17,6 +17,8 @@ test1,test2,test3
 $$$ command=""df -h"" || output_should_contain=""//192.168.0.2//test_mount""
 $$$ command=""df -h"" || output_shoudl_contain=""/dev/sda1""
 [\test commands and outputs]
+[Fix command] - default value is ""disabled""
+mount -t cifs -o username=Johnny,password=Bravo //192.168.0.2/test /mnt/win_share
 [Enabled]
 false
 ";

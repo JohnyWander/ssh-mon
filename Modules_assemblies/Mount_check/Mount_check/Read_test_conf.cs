@@ -7,7 +7,10 @@ namespace Mount_check
     {
         private static string path_conf = "modules\\Mount_check.conf";
         public static List<string> applies_to = new List<string>();
-       public static List<string[]> commands_and_outputs = new List<string[]>();
+        public static List<string[]> commands_and_outputs = new List<string[]>();
+
+        public static bool is_fix_commands_avaiable { get; private set; } = false;
+        public static string fix_command { get; private set; }
 
         public static void run()
         {
@@ -36,6 +39,15 @@ namespace Mount_check
                     commands_and_outputs.Add(new string[] { c, o });
                 }
 
+                if (ite == 8)
+                {
+                    fix_command = l;
+                    if (fix_command != "disabled")
+                    {
+                        is_fix_commands_avaiable = true;
+                    }
+
+                }
                 ite++;
             }
 

@@ -75,7 +75,10 @@ namespace ssh_mon.SSH.Tests
             {
                 //  Console.WriteLine("XDDDDDDDDDDDDDDDDDDDDDDDDDDD");
                 string[] outputs = new string[commands.Length];
-               
+
+                bool is_fix_command_present = module.__get_if_fix_command_is_avaiable();
+                
+
 
                 Task.Run(() =>
                 {
@@ -101,8 +104,27 @@ namespace ssh_mon.SSH.Tests
                 {
                     ssh_mon.GUI.Default_GUI.is_error_present[id] = true;
                     ssh_mon.GUI.Default_GUI.error_string[id] = module.__get_Error_messege();
+
+                    if(is_fix_command_present)
+                    {
+                        ssh_mon.GUI.Default_GUI.error_string[id] = ssh_mon.GUI.Language_strings.language_strings["execute_fix_command"];
+                    }
+
                     Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Red(id)).Wait();
-                    //  Console.WriteLine(id);
+                  
+                    if(is_fix_command_present)
+                    {
+                        Task.Run(() =>
+                        {
+                            Task.Delay(100).Wait(); // , will be changed for some on change value event 
+                            var c =client.CreateCommand(module.__get_fix_command());
+                            string output = c.Execute();
+                      
+                        });
+
+
+                    }
+
            
                 }
                 else if (failed==false)
@@ -129,6 +151,8 @@ namespace ssh_mon.SSH.Tests
 
 
         }
+
+       
 
         private string get_cpu_ram_usage(object source, ElapsedEventArgs e, SshClient client)
         {

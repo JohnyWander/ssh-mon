@@ -40,10 +40,14 @@ namespace ssh_mon.GUI
         static private int[] pos_y1_selection = new int[Server_amount];//
         static private int[] pos_y2_selection = new int[Server_amount];//
 
+        public static bool[] Execute_fix_command = new bool[Server_amount];
+
 
         static public bool[] is_error_present = new bool[Server_amount];
         static private bool[] is_set_ok = new bool[Server_amount];
         static public string[] error_string = new string[Server_amount];
+
+
 
 
 
@@ -97,8 +101,10 @@ namespace ssh_mon.GUI
             if (_CONSOLE_block == false)
             {
                 _CONSOLE_block = true;
+                int old_X = 0;int old_Y=0;
                 try
                 {
+                    ( old_X,old_Y) = Console.GetCursorPosition();
                     Console.SetCursorPosition(pos_x1[number], pos_y1[number]);
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("ERR: " + error_string[number]);
@@ -111,6 +117,7 @@ namespace ssh_mon.GUI
                 finally
                 {
                     _CONSOLE_block = false;
+                    Console.SetCursorPosition(old_X, old_Y);
                 }
                 
             }
@@ -162,9 +169,10 @@ namespace ssh_mon.GUI
         {
             int x, y;
             (x, y) = Console.GetCursorPosition();
-            Console.WriteLine("1. Select server");
-            Console.WriteLine("2. Deselect server");
-            Console.WriteLine("3. Restart GUI");
+            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["select_server_menu"]+"    "+ssh_mon.GUI.Language_strings.language_strings["execute_fix_command_menu"]);
+            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["deselect_server_menu"]+ "  ");
+            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["restart_gui"]+"       ");
+
             Console.WriteLine("ESC. quit");
             while (!Program.cancel_all.IsCancellationRequested)
             {
@@ -176,23 +184,35 @@ namespace ssh_mon.GUI
                     {
 
                         char key_c = key.KeyChar;
-                        byte xd = Convert.ToByte(key_c);
-                        byte[] xdw = new byte[] { xd };
-                        int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw));
+                      //  byte xd = Convert.ToByte(key_c);
+                      //  byte[] xdw = new byte[] { xd };
+                      //  int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw)); // removed for char option
+                        
+                       
 
-                        switch (switch_i)
+                        switch (key_c)
                         {
-                            case 1:
+                            case '1':
                                 option1_select_server();
                                 break;
-                            case 2:
+                            case '2':
                                 option2_deselect_server();
                                 break;
-                            case 3:
+                            case '3':
                                 Console.Clear();
                                 run();
                                 //    return Task.CompletedTask;
                                 break;
+                            case 'f':
+                                int ite = 0;
+                                foreach(bool b in selection_indicator)
+                                {
+                                    if (b == true) { Execute_fix_command[ite] = true; }
+                                    ite++;
+                                }
+
+
+                            break;
                         }
                     }
                     else
