@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.IO;
-using Renci.SshNet;
+using System.Runtime;
 namespace ssh_mon.SSH
 {
 
-    
+
     abstract public class make_list
     {
         public List<Server> serverlist = new List<Server>();
 
-        public IDictionary<string,Server>server_DICT = new Dictionary<string,Server>();
-        public List<Renci.SshNet.AuthenticationMethod> auths = new List <Renci.SshNet.AuthenticationMethod>();
+        public IDictionary<string, Server> server_DICT = new Dictionary<string, Server>();
+        public List<Renci.SshNet.AuthenticationMethod> auths = new List<Renci.SshNet.AuthenticationMethod>();
         //serwisy
-   
-     public void build_serverlist(bool Already_encrypted)
+
+        public void build_serverlist(bool Already_encrypted)
         {
             string name = "";
             string login = "";
@@ -34,9 +31,20 @@ namespace ssh_mon.SSH
                 if (Already_encrypted == true)
                 {
                     AES.Interfaces.IEnryptDecrypt decrypt = new AES.Cryptography();
-                   Console.WriteLine( GUI.Language_strings.language_strings["input_password"]+"\n");
+                    A:
+                    Console.WriteLine(GUI.Language_strings.language_strings["input_password"] + "\n");
                     string password = Program.input_password();
-                   string key_Aes = decrypt.Decrypt(File.ReadAllText("servers//KEYFILE"), password);
+                    
+                    string key_Aes= decrypt.Decrypt(File.ReadAllText("servers//KEYFILE"), password);
+                    if (key_Aes.Length == 0)
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("\n" + GUI.Language_strings.language_strings["decryption_fail"]);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        goto A;
+                    }
+                    
+                    
 
                     foreach (string server in server_files)
                     {
@@ -56,7 +64,7 @@ namespace ssh_mon.SSH
                             if (enabled_Aes == true)
                             {
 
-                                server_DICT.Add(name_Aes, new Server(name_Aes, ip_Aes,port_Aes ,login_Aes, key_Aes));
+                                server_DICT.Add(name_Aes, new Server(name_Aes, ip_Aes, port_Aes, login_Aes, key_Aes));
 
                             }
                         }
@@ -85,7 +93,7 @@ namespace ssh_mon.SSH
                             if (enabled == true)
                             {
 
-                                server_DICT.Add(name, new Server(name, ip,port, login, key));
+                                server_DICT.Add(name, new Server(name, ip, port, login, key));
 
                             }
                         }
@@ -94,15 +102,15 @@ namespace ssh_mon.SSH
             }
             catch (IndexOutOfRangeException)
             {
-                Console.WriteLine(GUI.Language_strings.language_strings["server_config_error"]+" "+current_filename);
+                Console.WriteLine(GUI.Language_strings.language_strings["server_config_error"] + " " + current_filename);
             }
-            
 
 
 
 
-           // serverlist.Add(new Server(ip_S, user_S, keyStr_SERWISY));
-           // server_DICT.Add(0, new Server(ip_S, user_S, keyStr_SERWISY));
+
+            // serverlist.Add(new Server(ip_S, user_S, keyStr_SERWISY));
+            // server_DICT.Add(0, new Server(ip_S, user_S, keyStr_SERWISY));
         }
 
 
@@ -112,7 +120,7 @@ namespace ssh_mon.SSH
 
 
 
-  public class Server
+    public class Server
     {
         public string name { get; private set; }
         public string ip { get; private set; }
@@ -120,7 +128,7 @@ namespace ssh_mon.SSH
         public string keystr { get; private set; }
 
         public string port { get; private set; }
-        public Server(string namec,string ipc,string portc,string userc, string keystrc)
+        public Server(string namec, string ipc, string portc, string userc, string keystrc)
         {
             name = namec;
             ip = ipc;
@@ -132,7 +140,7 @@ namespace ssh_mon.SSH
 
     }
 
-  
+
 }
 
 /*

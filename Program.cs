@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Security.Cryptography;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 namespace ssh_mon
 {
     class Program
@@ -29,7 +27,7 @@ namespace ssh_mon
 
         [DllImport("Kernel32.dll", SetLastError = true)]
         public static extern IntPtr GetStdHandle(int nStdHandle);
-        
+
         /// <summary>
         /// This flag enables the user to use the mouse to select and edit text. To enable
         /// this option, you must also set the ExtendedFlags flag.
@@ -120,7 +118,7 @@ namespace ssh_mon
                     GUI.Default_GUI.run();
                     Task.WaitAll(con.connections123.ToArray()); // Waiting for Connections to end                   
                     EnableQuickEdit();
-                break;
+                    break;
                 case 2:
 
                     foreach (string f in files)
@@ -154,7 +152,7 @@ namespace ssh_mon
                             try
                             {
                                 string[] encryptedStrings = new string[files.Length];
-                                int i = 0;
+
                                 List<Task> files_to_encrypt = new List<Task>();
                                 foreach (string f in files)
                                 {
@@ -167,7 +165,7 @@ namespace ssh_mon
                                 Console.ForegroundColor = ConsoleColor.Gray;
                                 goto A;
                             }
-                            catch (Exception e)
+                            catch (Exception)
                             {
                                 Console.ForegroundColor = ConsoleColor.Red;
                                 Console.WriteLine(GUI.Language_strings.language_strings["encryption_fail"]); // if encryption failed
@@ -175,7 +173,7 @@ namespace ssh_mon
                             }
                         }
                     }
-                break;
+                    break;
                 case 3:
                     foreach (string f in files)
                     {
@@ -200,7 +198,7 @@ namespace ssh_mon
 
 
                             string[] encryptedStrings = new string[files.Length];
-                            int i = 0;
+
                             bool fail = false;
                             List<Task> files_to_encrypt = new List<Task>();
                             foreach (string f in files)
@@ -236,7 +234,7 @@ namespace ssh_mon
                                 Console.ForegroundColor = ConsoleColor.Gray;
                             }
                         }
-                        catch (Exception e)
+                        catch (Exception)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine(GUI.Language_strings.language_strings["decryption_fail"]);
@@ -256,8 +254,8 @@ namespace ssh_mon
 
         private static void init()
         {
-            try { Directory.GetFiles("modules");}
-            catch{ Directory.CreateDirectory("modules");}
+            try { Directory.GetFiles("modules"); }
+            catch { Directory.CreateDirectory("modules"); }
 
             try { Directory.GetFiles("lang"); }
             catch (DirectoryNotFoundException) { Directory.CreateDirectory("lang"); File.WriteAllText("lang\\ENG.lang", Resources.Config_strings.default_lang); }
@@ -265,11 +263,13 @@ namespace ssh_mon
 
             try { File.OpenRead("config.cfg"); }
             catch (FileNotFoundException) { File.WriteAllText("config.cfg", Resources.Config_strings.default_conf); }
-            
-               
 
-            try { Directory.GetFiles("servers");}
-            catch (DirectoryNotFoundException){ Directory.CreateDirectory("servers");
+
+
+            try { Directory.GetFiles("servers"); }
+            catch (DirectoryNotFoundException)
+            {
+                Directory.CreateDirectory("servers");
                 File.WriteAllText("servers\\DEFAULT_SERVER_CONFIG_FILE.txt", Resources.Config_strings.default_server);
             }
 
@@ -292,7 +292,7 @@ namespace ssh_mon
             }
 
         }
-       
+
 
         private static void init_lang_strings(string lang)
         {

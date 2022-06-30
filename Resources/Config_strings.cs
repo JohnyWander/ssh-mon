@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace ssh_mon.Resources
+﻿namespace ssh_mon.Resources
 {
     public static class Config_strings
     {

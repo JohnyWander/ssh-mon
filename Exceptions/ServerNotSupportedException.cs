@@ -3,15 +3,15 @@
 
 namespace ssh_mon.Exceptions
 {
-    
+
     public class ServerNotSupportedException : Exception
     {
-        public ServerNotSupportedException(string message) :base(message)
+        public ServerNotSupportedException(string message) : base(message)
         {
 
         }
 
-        
+
 
     }
 }

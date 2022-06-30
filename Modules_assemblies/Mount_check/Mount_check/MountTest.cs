@@ -47,10 +47,18 @@ namespace Mount_check
             {
                 string c_o = ssh_command_outputs[i];
                 string o = outputs[i];
-           
+
+            
                 if(!c_o.Contains(o))
                 {
                     Test_failed = true;
+                    break;
+                }
+                else
+                {
+                 
+                  
+                    Test_failed = false;
                 }
 
               //  if (!ssh_command_outputs[i].Contains(outputs[i])){
@@ -64,7 +72,9 @@ namespace Mount_check
 
         public bool get_Test_failed()
         {
-            return Test_failed;
+            bool holder = Test_failed;
+            Test_failed = false;
+            return holder;
         }
 
         public string get_Error_messege()
@@ -94,6 +104,11 @@ namespace Mount_check
             return iteration_time;
         }
 
+        public void unset()
+        {
+            ssh_command_outputs.Clear();
+            Test_failed = false;
+        }
 
     }
 }

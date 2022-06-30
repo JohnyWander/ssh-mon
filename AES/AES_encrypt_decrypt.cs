@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Security.Cryptography;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 namespace ssh_mon.AES
 {
     internal sealed class Cryptography : Interfaces.IEnryptDecrypt
@@ -16,7 +13,7 @@ namespace ssh_mon.AES
 
         private static string _hash = "SHA1";
         private static string _salt = "regerd#e1vcbvrqf"; // Random
-        private static string _vector="aerhaekntiu28ubj"; // Random
+        private static string _vector = "aerhaekntiu28ubj"; // Random
 
         #endregion
 

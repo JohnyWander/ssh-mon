@@ -1,37 +1,36 @@
-﻿using System;
+﻿using Renci.SshNet;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Renci.SshNet;
 using System.Timers;
-using System.Reflection;
 namespace ssh_mon.SSH.Tests
 {
     public class tests
     {
-       
+
 
         public string os;
         public int id;
-        public string cpu_usage { get; private set; } 
+        public string cpu_usage { get; private set; }
         public string cpu_usage_top_process;
 
-        public double ram_total { get;private set; }
+        public double ram_total { get; private set; }
         public double ram_used { get; private set; }
         public double ram_free { get; private set; }
 
         public string[] cpu_ram_returns;
-        public tests(SshClient client,int server_ID)
+        public tests(SshClient client, int server_ID)
         {
             id = server_ID;
-           // client.Connect();
-            
-           // Console.WriteLine(id);
+            // client.Connect();
 
-            System.Timers.Timer Get_cpu_ram= new System.Timers.Timer();
-            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => cpu_usage=get_cpu_ram_usage(sender, e,client));
-            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id,cpu_usage,ram_total,ram_used,ram_free));
+            // Console.WriteLine(id);
+
+            System.Timers.Timer Get_cpu_ram = new System.Timers.Timer();
+            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => cpu_usage = get_cpu_ram_usage(sender, e, client));
+            Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id, cpu_usage, ram_total, ram_used, ram_free));
             Get_cpu_ram.Interval = Readconf.cpu_ram_timer;
             Get_cpu_ram.Enabled = true;
 
@@ -52,75 +51,80 @@ namespace ssh_mon.SSH.Tests
                         foreach (string[] array in commands_and_outputs)
                         {
                             commands[ite] = array[0];
-                         //   Console.WriteLine(array[0]);
+                            //   Console.WriteLine(array[0]);
                             ite++;
                         }
 
 
                         int iteration_time = modules.Value.get_iteration_time();
                         System.Timers.Timer run_custom_module_test = new System.Timers.Timer();
-                        run_custom_module_test.Elapsed += new ElapsedEventHandler((sender, e) =>  custom_module_test_event_run(sender, e, client, modules.Value,commands));
+                        run_custom_module_test.Elapsed += new ElapsedEventHandler((sender, e) => custom_module_test_event_run(sender, e, client, modules.Value, commands));
                         run_custom_module_test.Interval = iteration_time;
                         run_custom_module_test.Enabled = true;
-
-
-
-           
-
-
-
 
 
                     });
                 }
             }
-           
+
         }
 
-        private void custom_module_test_event_run(object source,ElapsedEventArgs e,SshClient client,ssh_mon.Modules.Modules module,string[]commands)
+        private void custom_module_test_event_run(object source, ElapsedEventArgs e, SshClient client, ssh_mon.Modules.Modules module, string[] commands)
         {
             try
             {
                 //  Console.WriteLine("XDDDDDDDDDDDDDDDDDDDDDDDDDDD");
                 string[] outputs = new string[commands.Length];
-                int ite = 0;
-                foreach (string command in commands)
-                {
-                    var cmd = client.CreateCommand(command);
-                    outputs[ite] = cmd.Execute();
-                    module.set_output(outputs[ite]);
-                    ite++;
-                }
+               
 
+                Task.Run(() =>
+                {
+                    module.__unset();
+
+                    int ite = 0;
+
+                    foreach (string command in commands)
+                    {
+                        var cmd = client.CreateCommand(command);
+                        outputs[ite] = cmd.Execute();
+                        module.set_output(outputs[ite]);
+                        ite++;
+                    }
+                }).Wait() ;
 
                 module.__run_test();
                 bool failed = module.__get_test_failed();
 
-                if (failed)
+                
+
+                if (failed==true)
                 {
                     ssh_mon.GUI.Default_GUI.is_error_present[id] = true;
                     ssh_mon.GUI.Default_GUI.error_string[id] = module.__get_Error_messege();
-                    Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Red(id)).Wait() ;
-                  //  Console.WriteLine(id);
+                    Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Red(id)).Wait();
+                    //  Console.WriteLine(id);
+           
                 }
-                else
+                else if (failed==false)
                 {
+                    
                     ssh_mon.GUI.Default_GUI.is_error_present[id] = false;
                     ssh_mon.GUI.Default_GUI.error_string[id] = "";
-                    Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Green(id)).Wait() ;
+                    Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Green(id)).Wait();
                     //  ssh_mon.GUI.Default_GUI.Set_status(null,null);
-                //    Console.WriteLine(id);
+                    //    Console.WriteLine(id);
 
 
                 }
 
-            }catch(Exception ex)
+            }
+            catch (Exception ex)
             {
                 Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
                 Console.ReadLine();
             }
-            
-           
+
+
 
 
 
@@ -132,30 +136,29 @@ namespace ssh_mon.SSH.Tests
             //   var cmd = client.CreateCommand("top -b -n5 -d.3 | grep \"Mem\" | tail -n1 | awk '{print($2)}' | cut -d'%' -f1");
             var cmd = client.CreateCommand(@"top -b -n10 -d.2 | grep 'Cpu(s)\|Mem' | grep -v 'Swap' | tail -n2");
             string result = cmd.Execute();
-           //Console.WriteLine(result);
+            //Console.WriteLine(result);
             string[] lines = result.Split("\n");
             //Console.WriteLine(lines[2]);
             string proc_use = lines[0].Substring(8, 5);
 
-            
+
             bool Mem_in_MiB = false;
-           // bool comma_in_double = false;
-            if(lines[1].ToCharArray().Count(c => c == ',') > 3) {
+            // bool comma_in_double = false;
+            if (lines[1].ToCharArray().Count(c => c == ',') > 3)
+            {
                 StringBuilder if_comma = new StringBuilder(lines[1]);
-           
+
                 int[] comma_pos = new int[lines[1].ToCharArray().Count(c => c == ',')];
                 int ite = 0;
-                for(int i = 0; i < if_comma.Length; i++)
+                for (int i = 0; i < if_comma.Length; i++)
                 {
-
                     if (if_comma[i] == ',')
                     {
                         comma_pos[ite] = i;
                         ite++;
                     }
-
                 }
-                if_comma.Remove(comma_pos[0], 1);if_comma.Insert(comma_pos[0], '.');
+                if_comma.Remove(comma_pos[0], 1); if_comma.Insert(comma_pos[0], '.');
                 if_comma.Remove(comma_pos[2], 1); if_comma.Insert(comma_pos[2], '.');
                 if_comma.Remove(comma_pos[4], 1); if_comma.Insert(comma_pos[4], '.');
 
@@ -168,7 +171,7 @@ namespace ssh_mon.SSH.Tests
             string[] mem_line = lines[1].Split(',');
             if (mem_line[0].Contains("MiB")) { Mem_in_MiB = true; }
 
-            
+
 
             Task<double> get_First = Task.Run(() =>
             {
@@ -178,20 +181,20 @@ namespace ssh_mon.SSH.Tests
                 }
                 double output = 0;
                 StringBuilder buffer = new StringBuilder();
-          
-              
+
+
                 foreach (char s in mem_line[0])
                 {
-                    if (s != 'M' && s != 'e' &&s!='m' && s != ':' && s != 'k' && s != 't' && s != 'o' && s != 'a' && s != 'l' && s != ','&& s!='i'&&s!='B'&&s!='f'&&s!='r')
+                    if (s != 'M' && s != 'e' && s != 'm' && s != ':' && s != 'k' && s != 't' && s != 'o' && s != 'a' && s != 'l' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
                     {
                         buffer.Append(s);
                     }
                 }
                 string inbuff = buffer.ToString();
                 inbuff = inbuff.Trim('\t').Trim();
-              //  Console.WriteLine(inbuff);
-                output = Convert.ToDouble(inbuff.Replace('.',','));
-              //  output = Convert.ToInt32(776.2);
+                //  Console.WriteLine(inbuff);
+                output = Convert.ToDouble(inbuff.Replace('.', ','));
+                //  output = Convert.ToInt32(776.2);
                 if (Mem_in_MiB == true)
                 {
                     output = output / 1024;//MiB to GiB
@@ -200,7 +203,7 @@ namespace ssh_mon.SSH.Tests
                 {
                     output = output / 1048576; // KB to GB
                 }
-                return Math.Round(output,2);//output;
+                return Math.Round(output, 2);//output;
             });
 
             Task<double> get_second = Task.Run(() =>
@@ -209,15 +212,15 @@ namespace ssh_mon.SSH.Tests
                 StringBuilder buffer = new StringBuilder();
                 foreach (char s in mem_line[1])
                 {
-                    if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r') 
+                    if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
                     {
                         buffer.Append(s);
                     }
 
                 }
                 string inbuff = buffer.ToString().Trim('\t').Trim();
-                output = Convert.ToDouble(inbuff.Replace('.',','));
-              //  output = Convert.ToInt32(744.3);
+                output = Convert.ToDouble(inbuff.Replace('.', ','));
+                //  output = Convert.ToInt32(744.3);
                 // Console.WriteLine(buffer.ToString());
                 if (Mem_in_MiB == true)
                 {
@@ -257,14 +260,18 @@ namespace ssh_mon.SSH.Tests
                 return Math.Round(output, 2);
             });
 
-            Task.WaitAll(get_First, get_second,get_third);
+            Task.WaitAll(get_First, get_second, get_third);
 
             if (mem_line[0].Contains("otal"))   // as versions of top not always have same order of free total/used
             {
                 ram_total = get_First.Result;
-            }else if (mem_line[0].Contains("ree")){
+            }
+            else if (mem_line[0].Contains("ree"))
+            {
                 ram_free = get_First.Result;
-            }else if(mem_line[0].Contains("sed")){
+            }
+            else if (mem_line[0].Contains("sed"))
+            {
                 ram_used = get_First.Result;
             }
             else
@@ -308,9 +315,9 @@ namespace ssh_mon.SSH.Tests
                 throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
             }
 
-          
 
-           // Console.WriteLine(proc_use);
+
+            // Console.WriteLine(proc_use);
 
             if (proc_use.Contains("%"))
             {

@@ -1,24 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Reflection;
 using System.IO;
+using System.Reflection;
 namespace ssh_mon.Modules
 {
     public static class LoadAssemblies
     {
 
-       public static IDictionary<int,Modules> ModuleAssembly= new Dictionary<int,Modules>();
-      public  static void run()
+        public static IDictionary<int, Modules> ModuleAssembly = new Dictionary<int, Modules>();
+        public static void run()
         {
 
             string[] module_assemblies = Directory.GetFiles("modules");
 
             Console.WriteLine();
             int ite = 0;
-            foreach(string assembly in module_assemblies)
+            foreach (string assembly in module_assemblies)
             {
                 if (!assembly.Contains(".conf"))
                 {
@@ -48,26 +45,15 @@ namespace ssh_mon.Modules
             string module_namespace = assembly.Split("\\")[1].Replace(".dll", string.Empty);
             Assembly module = Assembly.LoadFrom(assembly);
             module_main_class = module.GetType(module_namespace + ".Module");
+            activator = Activator.CreateInstance(module_main_class); // instance of module main class
 
 
 
-            //MethodInfos
 
-           
-            
-           
-           
-
-
-            activator = Activator.CreateInstance(module_main_class);
-           
-          
-
-           
 
         }
 
-        public void __run_test()
+        public void __run_test()                                                        // Public methods of the assembly
         {
             var run_test = module_main_class.GetMethod("run_test");
             object restult = run_test.Invoke(activator, null);
@@ -101,12 +87,14 @@ namespace ssh_mon.Modules
         }
         public void set_output(string commands_outputs)
         {
-            try {
+            try
+            {
                 object[] parameters = new object[1];
                 parameters[0] = commands_outputs;
                 var set_output = module_main_class.GetMethod("set_output", new Type[] { typeof(string) });
                 object result = set_output.Invoke(activator, parameters);
-            } catch(Exception e)
+            }
+            catch (Exception e)
             {
                 Console.WriteLine(e.Message + "\n" + e.StackTrace);
             }
@@ -116,6 +104,12 @@ namespace ssh_mon.Modules
             var get_iteration_time = module_main_class.GetMethod("get_iteration_time");
             object result = get_iteration_time.Invoke(activator, null);
             return (int)result;
+        }
+
+        public void __unset()
+        {
+            var unset = module_main_class.GetMethod("unset");
+            object result = unset.Invoke(activator, null);
         }
 
 

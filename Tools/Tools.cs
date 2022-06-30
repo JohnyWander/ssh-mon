@@ -1,24 +1,20 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
 namespace ssh_mon.Tools
 {
-    internal sealed  class Tools : Interfaces.IStringTools,Interfaces.IKeyGen
+    internal sealed class Tools : Interfaces.IStringTools, Interfaces.IKeyGen
     {
         // text
-        public string left(string text,int count)
+        public string left(string text, int count)
         {
-            return text.Substring(0,count);
+            return text.Substring(0, count);
         }
 
-        public string right(string text,int count)
+        public string right(string text, int count)
         {
             string output = "";
             int ite = 0;
-            foreach(char x in text)
+            foreach (char x in text)
             {
                 if (ite >= count)
                 {
