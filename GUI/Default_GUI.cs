@@ -2,9 +2,20 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using System.Threading.Channels;
 using System.Timers;
 namespace ssh_mon.GUI
 {
+    public class queued_job {
+
+        public Task job;
+        public string[] args;
+
+
+  
+
+    }
+
     public static class Default_GUI
     {
 
@@ -49,9 +60,9 @@ namespace ssh_mon.GUI
 
 
 
+        static Channel<KeyValuePair<Action<object[]>,object[]>> queue = Channel.CreateUnbounded<KeyValuePair<Action<object[]>,object[]>>();
 
-
-        public static bool _CONSOLE_block { set; private get; } = false; 
+        public static bool _CONSOLE_block { set; private get; } = false;
 
         //    private static char dot = '\u2022';
 
@@ -91,20 +102,33 @@ namespace ssh_mon.GUI
 
 
 
-            Task.Run(() => Menu()).ConfigureAwait(true);
+            Task.Run(() => Menu());
+
+            Task.Run(async () =>
+            {
+                while (await queue.Reader.WaitToReadAsync())
+                {
+                    var job_n_args = await queue.Reader.ReadAsync();
+                    Action<object[]> job = job_n_args.Key;
+                    object[] args = job_n_args.Value;
+                    job(args);
+                }
+
+            });
+
 
         }
 
- 
+
         public static void Set_Red(int number)
         {
             if (_CONSOLE_block == false)
             {
                 _CONSOLE_block = true;
-                int old_X = 0;int old_Y=0;
+                int old_X = 0; int old_Y = 0;
                 try
                 {
-                    ( old_X,old_Y) = Console.GetCursorPosition();
+                    (old_X, old_Y) = Console.GetCursorPosition();
                     Console.SetCursorPosition(pos_x1[number], pos_y1[number]);
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("ERR: " + error_string[number]);
@@ -119,13 +143,13 @@ namespace ssh_mon.GUI
                     _CONSOLE_block = false;
                     Console.SetCursorPosition(old_X, old_Y);
                 }
-                
+
             }
             else
             {
                 while (_CONSOLE_block == true)
                 {
-                    
+
                 }
 
                 Set_Red(number);
@@ -169,9 +193,9 @@ namespace ssh_mon.GUI
         {
             int x, y;
             (x, y) = Console.GetCursorPosition();
-            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["select_server_menu"]+"    "+ssh_mon.GUI.Language_strings.language_strings["execute_fix_command_menu"]);
-            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["deselect_server_menu"]+ "  ");
-            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["restart_gui"]+"       ");
+            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["select_server_menu"] + "    " + ssh_mon.GUI.Language_strings.language_strings["execute_fix_command_menu"]);
+            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["deselect_server_menu"] + "  ");
+            Console.WriteLine(ssh_mon.GUI.Language_strings.language_strings["restart_gui"] + "       ");
 
             Console.WriteLine("ESC. quit");
             while (!Program.cancel_all.IsCancellationRequested)
@@ -184,11 +208,11 @@ namespace ssh_mon.GUI
                     {
 
                         char key_c = key.KeyChar;
-                      //  byte xd = Convert.ToByte(key_c);
-                      //  byte[] xdw = new byte[] { xd };
-                      //  int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw)); // removed for char option
-                        
-                       
+                        //  byte xd = Convert.ToByte(key_c);
+                        //  byte[] xdw = new byte[] { xd };
+                        //  int switch_i = Convert.ToInt32(Encoding.UTF8.GetString(xdw)); // removed for char option
+
+
 
                         switch (key_c)
                         {
@@ -205,14 +229,14 @@ namespace ssh_mon.GUI
                                 break;
                             case 'f':
                                 int ite = 0;
-                                foreach(bool b in selection_indicator)
+                                foreach (bool b in selection_indicator)
                                 {
                                     if (b == true) { Execute_fix_command[ite] = true; }
                                     ite++;
                                 }
 
 
-                            break;
+                                break;
                         }
                     }
                     else
@@ -309,7 +333,7 @@ namespace ssh_mon.GUI
         }
 
 
-        public static Task fetch_cpu_ram_result(int id, string cpu_usage, double total, double used, double free)
+        public static async Task fetch_cpu_ram_result(int id, string cpu_usage, double total, double used, double free)
         {
             int console_color_index = 0;
 
@@ -358,25 +382,55 @@ namespace ssh_mon.GUI
 
 
 
-            Task.Run(() => insert_cpu_percentage(cpu_usage, id, console_color_index)).Wait();
+            //  Task.Run(() => insert_cpu_percentage(cpu_usage, id, console_color_index)).Wait();// Old
+            //  Task.Run(() => insert_ram_percentage(ram_percentage[id], id, ram_total[id], ram_used[id], console_color_index_ram)).Wait();// Old
+           Task cpu= Task.Run(async() =>
+            {
+                
+                    await queue.Writer.WaitToWriteAsync(); //waiting for chance to write to channel
+                    Action<object[]> insert_cpu = insert_cpu_percentage; // creatinc actionn delegate
+                    object[] args = new object[] { cpu_usage, id, console_color_index }; // object array for action delegates arguments
+                    var pair = new KeyValuePair<Action<object[]>, object[]>(insert_cpu, args); // creating keypair of Key - action delegate - value arguments for it
+                    await queue.Writer.WriteAsync(pair); // waiting for writer to to it's job
+                  
+                
+            });
 
-            Task.Run(() => insert_ram_percentage(ram_percentage[id], id, ram_total[id], ram_used[id], console_color_index_ram)).Wait();
+            Task ram =Task.Run(async () =>
+            {
+                await queue.Writer.WaitToWriteAsync(); // same as above ^
+                Action<object[]> insert_ram = insert_ram_percentage;//  |
+                object[] args = new object[] { ram_percentage[id], id, ram_total[id], ram_used[id], console_color_index_ram };
+                var pair = new KeyValuePair<Action<object[]>, object[]>(insert_ram, args);
+                await queue.Writer.WriteAsync(pair);
+            });
 
-            return Task.CompletedTask;
+       
         }
 
-        private static void insert_cpu_percentage(string percentage, int server_id, int console_color_index)
+        private static void insert_cpu_percentage(object[] args)
         {
+            string percentage = (string)args[0];
+            int server_id = (int)args[1];
+            int console_color_index = (int)args[2];
+
+
             Console.ForegroundColor = (ConsoleColor)console_color_index;
             (int old_x, int old_y) = Console.GetCursorPosition();
             Console.SetCursorPosition(cpu_x1[server_id], cpu_y1[server_id]);
             Console.Write(percentage);
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.SetCursorPosition(old_x, old_y);
+          
         }
 
-        private static void insert_ram_percentage(string percentage, int server_id, string total, string used, int Console_color_index)
+        private static void insert_ram_percentage(object[] args)
         {
+            string percentage=(string)args[0];
+            int server_id =(int)args[1];
+            string total=(string)args[2];
+            string used=(string)args[3];
+            int Console_color_index=(int)args[4];
             Console.ForegroundColor = (ConsoleColor)Console_color_index;
             (int old_x, int old_y) = Console.GetCursorPosition();
             Console.SetCursorPosition(ram_x1[server_id], ram_y1[server_id]);
@@ -390,6 +444,3 @@ namespace ssh_mon.GUI
 
 
 }
-
-
-
