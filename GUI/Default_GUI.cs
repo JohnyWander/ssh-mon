@@ -290,7 +290,7 @@ namespace ssh_mon.GUI
                 selection_indicator[id] = true;
                 Console.SetCursorPosition(pos_x1_selection[id], pos_y1_selection[id]);
                 Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write(" SELECTED");
+                Console.Write(Language_strings.language_strings["selected_server"]);
                 (pos_x2_selection[id], pos_y2_selection[id]) = Console.GetCursorPosition();
                 Console.SetCursorPosition(old_x, old_y);
                 Console.ForegroundColor = ConsoleColor.Gray;
@@ -304,7 +304,7 @@ namespace ssh_mon.GUI
         private static void option2_deselect_server()
         {
             (int x, int y) = Console.GetCursorPosition();
-            Console.Write(Language_strings.language_strings["deselect_server"]);
+            Console.Write(Language_strings.language_strings["deselect_server_"]);
             (int x1, int y2) = Console.GetCursorPosition();
             ConsoleKeyInfo key = Console.ReadKey();
             // Console.Write("\b \b");

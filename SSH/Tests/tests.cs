@@ -33,326 +33,207 @@ namespace ssh_mon.SSH.Tests
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id, cpu_usage, ram_total, ram_used, ram_free));
             Get_cpu_ram.Interval = Readconf.cpu_ram_timer;
             Get_cpu_ram.Enabled = true;
-
-
-            foreach (var modules in ssh_mon.Modules.LoadAssemblies.ModuleAssembly)
+        }
+            private string get_cpu_ram_usage(object source, ElapsedEventArgs e, SshClient client)
             {
-                string name = connections.names[id];
-                List<string> names = modules.Value.__get_names();
+                string[] values_to_return = new string[4];
+                //   var cmd = client.CreateCommand("top -b -n5 -d.3 | grep \"Mem\" | tail -n1 | awk '{print($2)}' | cut -d'%' -f1");
+                var cmd = client.CreateCommand(@"top -b -n10 -d.2 | grep 'Cpu(s)\|Mem' | grep -v 'Swap' | tail -n2");
+                string result = cmd.Execute();
+                //Console.WriteLine(result);
+                string[] lines = result.Split("\n");
+                //Console.WriteLine(lines[2]);
+                string proc_use = lines[0].Substring(8, 5);
 
-                if (names.Contains(name))
+
+                bool Mem_in_MiB = false;
+                // bool comma_in_double = false;
+                if (lines[1].ToCharArray().Count(c => c == ',') > 3)
                 {
-                    Task.Run(() =>
+                    StringBuilder if_comma = new StringBuilder(lines[1]);
+
+                    int[] comma_pos = new int[lines[1].ToCharArray().Count(c => c == ',')];
+                    int ite = 0;
+                    for (int i = 0; i < if_comma.Length; i++)
                     {
-                        List<string[]> commands_and_outputs = new List<string[]>();
-                        commands_and_outputs = modules.Value.__get_commands_and_outputs();
-                        string[] commands = new string[commands_and_outputs.Count];
-                        int ite = 0;
-                        foreach (string[] array in commands_and_outputs)
+                        if (if_comma[i] == ',')
                         {
-                            commands[ite] = array[0];
-                            //   Console.WriteLine(array[0]);
+                            comma_pos[ite] = i;
                             ite++;
                         }
+                    }
+                    if_comma.Remove(comma_pos[0], 1); if_comma.Insert(comma_pos[0], '.');
+                    if_comma.Remove(comma_pos[2], 1); if_comma.Insert(comma_pos[2], '.');
+                    if_comma.Remove(comma_pos[4], 1); if_comma.Insert(comma_pos[4], '.');
 
 
-                        int iteration_time = modules.Value.get_iteration_time();
-                        System.Timers.Timer run_custom_module_test = new System.Timers.Timer();
-                        run_custom_module_test.Elapsed += new ElapsedEventHandler((sender, e) => custom_module_test_event_run(sender, e, client, modules.Value, commands));
-                        run_custom_module_test.Interval = iteration_time;
-                        run_custom_module_test.Enabled = true;
 
 
-                    });
+                    //Console.WriteLine(if_comma.ToString());
+                    lines[1] = if_comma.ToString();
                 }
-            }
-
-        }
-
-        private void custom_module_test_event_run(object source, ElapsedEventArgs e, SshClient client, ssh_mon.Modules.Modules module, string[] commands)
-        {
-            try
-            {
-                //  Console.WriteLine("XDDDDDDDDDDDDDDDDDDDDDDDDDDD");
-                string[] outputs = new string[commands.Length];
-
-                bool is_fix_command_present = module.__get_if_fix_command_is_avaiable();
-                
+                string[] mem_line = lines[1].Split(',');
+                if (mem_line[0].Contains("MiB")) { Mem_in_MiB = true; }
 
 
-                Task.Run(() =>
+
+                Task<double> get_First = Task.Run(() =>
                 {
-                    module.__unset();
-
-                    int ite = 0;
-
-                    foreach (string command in commands)
+                    if (mem_line[0].Contains("otal"))
                     {
-                        var cmd = client.CreateCommand(command);
-                        outputs[ite] = cmd.Execute();
-                        module.set_output(outputs[ite]);
-                        ite++;
+
                     }
-                }).Wait() ;
+                    double output = 0;
+                    StringBuilder buffer = new StringBuilder();
 
-                module.__run_test();
-                bool failed = module.__get_test_failed();
 
-                
-
-                if (failed==true)
-                {
-                    ssh_mon.GUI.Default_GUI.is_error_present[id] = true;
-                    ssh_mon.GUI.Default_GUI.error_string[id] = module.__get_Error_messege();
-
-                    if(is_fix_command_present)
+                    foreach (char s in mem_line[0])
                     {
-                        ssh_mon.GUI.Default_GUI.error_string[id] = ssh_mon.GUI.Language_strings.language_strings["execute_fix_command"];
-                    }
-
-                    Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Red(id)).Wait();
-                  
-                    if(is_fix_command_present)
-                    {
-                        Task.Run(() =>
+                        if (s != 'M' && s != 'e' && s != 'm' && s != ':' && s != 'k' && s != 't' && s != 'o' && s != 'a' && s != 'l' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
                         {
-                            Task.Delay(100).Wait(); // , will be changed for some on change value event 
-                            var c =client.CreateCommand(module.__get_fix_command());
-                            string output = c.Execute();
-                      
-                        });
-
-
+                            buffer.Append(s);
+                        }
                     }
-
-           
-                }
-                else if (failed==false)
-                {
-                    
-                    ssh_mon.GUI.Default_GUI.is_error_present[id] = false;
-                    ssh_mon.GUI.Default_GUI.error_string[id] = "";
-                    Task.Run(() => ssh_mon.GUI.Default_GUI.Set_Green(id)).Wait();
-                    //  ssh_mon.GUI.Default_GUI.Set_status(null,null);
-                    //    Console.WriteLine(id);
-
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message + "\n" + ex.StackTrace);
-                Console.ReadLine();
-            }
-
-
-
-
-
-        }
-
-       
-
-        private string get_cpu_ram_usage(object source, ElapsedEventArgs e, SshClient client)
-        {
-            string[] values_to_return = new string[4];
-            //   var cmd = client.CreateCommand("top -b -n5 -d.3 | grep \"Mem\" | tail -n1 | awk '{print($2)}' | cut -d'%' -f1");
-            var cmd = client.CreateCommand(@"top -b -n10 -d.2 | grep 'Cpu(s)\|Mem' | grep -v 'Swap' | tail -n2");
-            string result = cmd.Execute();
-            //Console.WriteLine(result);
-            string[] lines = result.Split("\n");
-            //Console.WriteLine(lines[2]);
-            string proc_use = lines[0].Substring(8, 5);
-
-
-            bool Mem_in_MiB = false;
-            // bool comma_in_double = false;
-            if (lines[1].ToCharArray().Count(c => c == ',') > 3)
-            {
-                StringBuilder if_comma = new StringBuilder(lines[1]);
-
-                int[] comma_pos = new int[lines[1].ToCharArray().Count(c => c == ',')];
-                int ite = 0;
-                for (int i = 0; i < if_comma.Length; i++)
-                {
-                    if (if_comma[i] == ',')
+                    string inbuff = buffer.ToString();
+                    inbuff = inbuff.Trim('\t').Trim();
+                    //  Console.WriteLine(inbuff);
+                    output = Convert.ToDouble(inbuff.Replace('.', ','));
+                    //  output = Convert.ToInt32(776.2);
+                    if (Mem_in_MiB == true)
                     {
-                        comma_pos[ite] = i;
-                        ite++;
+                        output = output / 1024;//MiB to GiB
                     }
-                }
-                if_comma.Remove(comma_pos[0], 1); if_comma.Insert(comma_pos[0], '.');
-                if_comma.Remove(comma_pos[2], 1); if_comma.Insert(comma_pos[2], '.');
-                if_comma.Remove(comma_pos[4], 1); if_comma.Insert(comma_pos[4], '.');
-
-
-
-
-                //Console.WriteLine(if_comma.ToString());
-                lines[1] = if_comma.ToString();
-            }
-            string[] mem_line = lines[1].Split(',');
-            if (mem_line[0].Contains("MiB")) { Mem_in_MiB = true; }
-
-
-
-            Task<double> get_First = Task.Run(() =>
-            {
-                if (mem_line[0].Contains("otal"))
-                {
-
-                }
-                double output = 0;
-                StringBuilder buffer = new StringBuilder();
-
-
-                foreach (char s in mem_line[0])
-                {
-                    if (s != 'M' && s != 'e' && s != 'm' && s != ':' && s != 'k' && s != 't' && s != 'o' && s != 'a' && s != 'l' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
+                    else
                     {
-                        buffer.Append(s);
+                        output = output / 1048576; // KB to GB
                     }
-                }
-                string inbuff = buffer.ToString();
-                inbuff = inbuff.Trim('\t').Trim();
-                //  Console.WriteLine(inbuff);
-                output = Convert.ToDouble(inbuff.Replace('.', ','));
-                //  output = Convert.ToInt32(776.2);
-                if (Mem_in_MiB == true)
+                    return Math.Round(output, 2);//output;
+                });
+
+                Task<double> get_second = Task.Run(() =>
                 {
-                    output = output / 1024;//MiB to GiB
+                    double output = 0;
+                    StringBuilder buffer = new StringBuilder();
+                    foreach (char s in mem_line[1])
+                    {
+                        if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
+                        {
+                            buffer.Append(s);
+                        }
+
+                    }
+                    string inbuff = buffer.ToString().Trim('\t').Trim();
+                    output = Convert.ToDouble(inbuff.Replace('.', ','));
+                    //  output = Convert.ToInt32(744.3);
+                    // Console.WriteLine(buffer.ToString());
+                    if (Mem_in_MiB == true)
+                    {
+                        output = output / 1024;//MiB to GiB
+                    }
+                    else
+                    {
+                        output = output / 1048576; // KB to GB
+                    }
+                    return Math.Round(output, 2);
+                });
+
+                Task<double> get_third = Task.Run(() =>
+                {
+                    double output = 0;
+                    StringBuilder buffer = new StringBuilder();
+                    foreach (char s in mem_line[2])
+                    {
+                        if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
+                        {
+                            buffer.Append(s);
+                        }
+
+                    }
+                    string inbuff = buffer.ToString().Trim('\t').Trim();
+                    output = Convert.ToDouble(inbuff.Replace('.', ','));
+                    //  output = Convert.ToInt32(744.3);
+                    // Console.WriteLine(buffer.ToString());
+                    if (Mem_in_MiB == true)
+                    {
+                        output = output / 1024;//MiB to GiB
+                    }
+                    else
+                    {
+                        output = output / 1048576; // KB to GB
+                    }
+                    return Math.Round(output, 2);
+                });
+
+                Task.WaitAll(get_First, get_second, get_third);
+
+                if (mem_line[0].Contains("otal"))   // as versions of top not always have same order of free total/used
+                {
+                    ram_total = get_First.Result;
+                }
+                else if (mem_line[0].Contains("ree"))
+                {
+                    ram_free = get_First.Result;
+                }
+                else if (mem_line[0].Contains("sed"))
+                {
+                    ram_used = get_First.Result;
                 }
                 else
                 {
-                    output = output / 1048576; // KB to GB
+                    throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
                 }
-                return Math.Round(output, 2);//output;
-            });
 
-            Task<double> get_second = Task.Run(() =>
-            {
-                double output = 0;
-                StringBuilder buffer = new StringBuilder();
-                foreach (char s in mem_line[1])
+
+                if (mem_line[1].Contains("otal"))   // as versions of top not always have same order of free total/used
                 {
-                    if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
-                    {
-                        buffer.Append(s);
-                    }
-
+                    ram_total = get_second.Result;
                 }
-                string inbuff = buffer.ToString().Trim('\t').Trim();
-                output = Convert.ToDouble(inbuff.Replace('.', ','));
-                //  output = Convert.ToInt32(744.3);
-                // Console.WriteLine(buffer.ToString());
-                if (Mem_in_MiB == true)
+                else if (mem_line[1].Contains("ree"))
                 {
-                    output = output / 1024;//MiB to GiB
+                    ram_free = get_second.Result;
+                }
+                else if (mem_line[1].Contains("sed"))
+                {
+                    ram_used = get_second.Result;
                 }
                 else
                 {
-                    output = output / 1048576; // KB to GB
+                    throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
                 }
-                return Math.Round(output, 2);
-            });
 
-            Task<double> get_third = Task.Run(() =>
-            {
-                double output = 0;
-                StringBuilder buffer = new StringBuilder();
-                foreach (char s in mem_line[2])
+
+                if (mem_line[2].Contains("otal"))   // as versions of top not always have same order of free total/used
                 {
-                    if (s != 'u' && s != 's' && s != 'e' && s != 'd' && s != 'k' && s != ',' && s != 'i' && s != 'B' && s != 'f' && s != 'r')
-                    {
-                        buffer.Append(s);
-                    }
-
+                    ram_total = get_third.Result;
                 }
-                string inbuff = buffer.ToString().Trim('\t').Trim();
-                output = Convert.ToDouble(inbuff.Replace('.', ','));
-                //  output = Convert.ToInt32(744.3);
-                // Console.WriteLine(buffer.ToString());
-                if (Mem_in_MiB == true)
+                else if (mem_line[2].Contains("ree"))
                 {
-                    output = output / 1024;//MiB to GiB
+                    ram_free = get_third.Result;
+                }
+                else if (mem_line[2].Contains("sed"))
+                {
+                    ram_used = get_third.Result;
                 }
                 else
                 {
-                    output = output / 1048576; // KB to GB
+                    throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
                 }
-                return Math.Round(output, 2);
-            });
-
-            Task.WaitAll(get_First, get_second, get_third);
-
-            if (mem_line[0].Contains("otal"))   // as versions of top not always have same order of free total/used
-            {
-                ram_total = get_First.Result;
-            }
-            else if (mem_line[0].Contains("ree"))
-            {
-                ram_free = get_First.Result;
-            }
-            else if (mem_line[0].Contains("sed"))
-            {
-                ram_used = get_First.Result;
-            }
-            else
-            {
-                throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
-            }
-
-
-            if (mem_line[1].Contains("otal"))   // as versions of top not always have same order of free total/used
-            {
-                ram_total = get_second.Result;
-            }
-            else if (mem_line[1].Contains("ree"))
-            {
-                ram_free = get_second.Result;
-            }
-            else if (mem_line[1].Contains("sed"))
-            {
-                ram_used = get_second.Result;
-            }
-            else
-            {
-                throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
-            }
-
-
-            if (mem_line[2].Contains("otal"))   // as versions of top not always have same order of free total/used
-            {
-                ram_total = get_third.Result;
-            }
-            else if (mem_line[2].Contains("ree"))
-            {
-                ram_free = get_third.Result;
-            }
-            else if (mem_line[2].Contains("sed"))
-            {
-                ram_used = get_third.Result;
-            }
-            else
-            {
-                throw new Exceptions.ServerNotSupportedException("Your server uses not supported version of top");
-            }
 
 
 
-            // Console.WriteLine(proc_use);
+                // Console.WriteLine(proc_use);
 
-            if (proc_use.Contains("%"))
-            {
-                return proc_use;
-            }
-            else
-            {
-                return proc_use + "%";
+                if (proc_use.Contains("%"))
+                {
+                    return proc_use;
+                }
+                else
+                {
+                    return proc_use + "%";
+                }
+
             }
 
         }
-
     }
-}
+

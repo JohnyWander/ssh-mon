@@ -36,7 +36,8 @@ namespace ssh_mon.AES
                 byte[] keyBytes = _passwordBytes.GetBytes(_keySize / 8);
 
                 cipher.Mode = CipherMode.CBC;
-
+                    ;
+                
                 using (ICryptoTransform encryptor = cipher.CreateEncryptor(keyBytes, vectorBytes))
                 {
                     using (MemoryStream to = new MemoryStream())
@@ -73,7 +74,7 @@ namespace ssh_mon.AES
                 byte[] keyBytes = _passwordBytes.GetBytes(_keySize / 8);
 
                 cipher.Mode = CipherMode.CBC;
-
+                
                 try
                 {
                     using (ICryptoTransform decryptor = cipher.CreateDecryptor(keyBytes, vectorBytes))
@@ -88,7 +89,7 @@ namespace ssh_mon.AES
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     return String.Empty;
                 }

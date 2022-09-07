@@ -10,87 +10,37 @@ namespace ssh_mon
 {
     class Program
     {
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr GetConsoleWindow();
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool GetConsoleMode(
-            IntPtr hConsoleHandle,
-            out int lpMode);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool SetConsoleMode(
-            IntPtr hConsoleHandle,
-            int ioMode);
-
-        public const int STD_INPUT_HANDLE = -10;
-
-        [DllImport("Kernel32.dll", SetLastError = true)]
-        public static extern IntPtr GetStdHandle(int nStdHandle);
-
-        /// <summary>
-        /// This flag enables the user to use the mouse to select and edit text. To enable
-        /// this option, you must also set the ExtendedFlags flag.
-        /// </summary>
-        const int QuickEditMode = 64;
-
-        // ExtendedFlags must be combined with
-        // InsertMode and QuickEditMode when setting
-        /// <summary>
-        /// ExtendedFlags must be enabled in order to enable InsertMode or QuickEditMode.
-        /// </summary>
-        const int ExtendedFlags = 128;
-
-        static void DisableQuickEdit()
-        {
-            IntPtr conHandle = GetStdHandle(STD_INPUT_HANDLE);
-            int mode;
-
-            if (!GetConsoleMode(conHandle, out mode))
-            {
-                // error getting the console mode. Exit.
-                return;
-            }
-
-            mode = mode & ~(QuickEditMode | ExtendedFlags);
-
-            if (!SetConsoleMode(conHandle, mode))
-            {
-                // error setting console mode.
-            }
-        }
-        static void EnableQuickEdit()
-        {
-
-            IntPtr conHandle = GetStdHandle(STD_INPUT_HANDLE);
-            int mode;
-
-            if (!GetConsoleMode(conHandle, out mode))
-            {
-                // error getting the console mode. Exit.
-                return;
-            }
-
-            mode = mode | (QuickEditMode | ExtendedFlags);
-
-            if (!SetConsoleMode(conHandle, mode))
-            {
-                // error setting console mode.
-            }
-        }
+      
         private static string LANG;
-        static public CancellationTokenSource cancel_all = new CancellationTokenSource();
+        static public CancellationTokenSource cancel_all = new CancellationTokenSource();//for gentle connection termination
         private static bool Already_Encrypted = true;
+        public static bool CompletedCreatingConnectionList
+        {
+           
+            set
+            {
+                StartGUI();
+            }
+        }
+        private static Action StartGUI;
+
+
+
+       public static Tools.Interfaces.IInputPassword passwordinput = new Tools.Tools();
+        static Tools.Interfaces.IDisableQuickEdit Disable_QE = new Tools.Interop();
+        static Action DisableQuickEdit = Disable_QE.DisableQuickEdit;
+        static Action EnableQuickEdit = Disable_QE.EnableQuickEdit;
         static void Main(string[] args)
         {
+            DisableQuickEdit();
             init(); // chekcing for folders/ files presence etc.
             Readconf.run(); ; // Reading configuration file
             LANG = Readconf.LANG;
             init_lang_strings(LANG); // Setting strings to provided language
-            Modules.LoadAssemblies.run(); // Loading custom modules 
+            Modules.LoadAssemblies LoadAssembly = new Modules.LoadAssemblies(); // Loading custom modules 
             menu(); // main menu
 
-        A:
+        A: // i know c:
             ConsoleKeyInfo key = Console.ReadKey();
             Console.Write("\b \b");
             char key_c = key.KeyChar;
@@ -111,11 +61,12 @@ namespace ssh_mon
             switch (switch_i)
             {
                 case 1:
-                    DisableQuickEdit(); // clicking on console window was messing up gui
+                  
                     var con = new SSH.connections();//
                     int servers = Directory.GetFiles("servers").Count();
-                    con.run(cancel_all, Already_Encrypted);// building server list, starting tests
-                    GUI.Default_GUI.run();
+                    StartGUI= GUI.Default_GUI.run;
+                    con.run(cancel_all, Already_Encrypted);// building server list, connecting, on connection completion launching GUI by invoking action by SET in CompletedCreatingConnectionList boolj
+
                     Task.WaitAll(con.connections123.ToArray()); // Waiting for Connections to end                   
                     EnableQuickEdit();
                     break;
@@ -139,9 +90,9 @@ namespace ssh_mon
                     {
                         AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
                         Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
-                        string password = input_password();
+                        string password = passwordinput.input_password();
                         Console.WriteLine("\n" + GUI.Language_strings.language_strings["input_password_confirm"]);
-                        string password_confirm = input_password();
+                        string password_confirm = passwordinput.input_password();
                         if (password != password_confirm)
                         {
                             Console.WriteLine(GUI.Language_strings.language_strings["input_password_no_match"]);
@@ -156,7 +107,7 @@ namespace ssh_mon
                                 List<Task> files_to_encrypt = new List<Task>();
                                 foreach (string f in files)
                                 {
-                                    files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Encrypt(File.ReadAllText(f), password)))); // encrypting files simultaneously
+                                    files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Encrypt(File.ReadAllText(f,Encoding.UTF8), password), Encoding.UTF8))); // encrypting files simultaneously
                                 }
                                 Task.WaitAll(files_to_encrypt.ToArray()); // Waiting For encryption processes to end
                                 Already_Encrypted = true;
@@ -194,7 +145,7 @@ namespace ssh_mon
                         {
                             AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
                             Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
-                            string password = input_password();
+                            string password = passwordinput.input_password();
 
 
                             string[] encryptedStrings = new string[files.Length];
@@ -205,11 +156,11 @@ namespace ssh_mon
                             {
                                 files_to_encrypt.Add(Task.Run(() =>
                                 {
-                                    string decrypted = encrypt.Decrypt(File.ReadAllText(f), password); //decryption simultaneously
+                                    string decrypted = encrypt.Decrypt(File.ReadAllText(f, Encoding.UTF8), password); //decryption simultaneously
 
                                     if (decrypted.Length != 0)
                                     {
-                                        File.WriteAllText(f, decrypted);
+                                        File.WriteAllText(f, decrypted,Encoding.UTF8);
                                     }
                                     else
                                     {
@@ -302,29 +253,7 @@ namespace ssh_mon
             }
         }
 
-        public static string input_password()
-        {
-            string pass = "";
-            ConsoleKey key;
-            do
-            {
-                var keyInfo = Console.ReadKey(intercept: true);
-                key = keyInfo.Key;
-
-                if (key == ConsoleKey.Backspace && pass.Length > 0)
-                {
-                    Console.Write("\b \b");
-                    pass = pass[0..^1];
-                }
-                else if (!char.IsControl(keyInfo.KeyChar))
-                {
-                    Console.Write("*");
-                    pass += keyInfo.KeyChar;
-                }
-            } while (key != ConsoleKey.Enter);
-
-            return pass;
-        }
+        
 
     }
 }

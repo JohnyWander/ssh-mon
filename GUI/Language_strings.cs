@@ -8,19 +8,25 @@ namespace ssh_mon.GUI
         //menu
         public static void run(string lang)
         {
-            string[] lang_lines = File.ReadAllLines("lang\\" + lang + ".lang");
-
-            foreach (string l in lang_lines)
+            try
             {
-                if (!l.Contains("["))
+                string[] lang_lines = File.ReadAllLines("lang\\" + lang + ".lang");
+
+                foreach (string l in lang_lines)
                 {
-                    string[] split = l.Split('=');
-                    language_strings[split[0]] = split[1];
+                    if (!l.Contains("["))
+                    {
+                        string[] split = l.Split('=');
+                        language_strings[split[0]] = split[1];
 
 
+                    }
                 }
             }
-
+            catch (FileNotFoundException)
+            {
+                File.WriteAllText("lang\\" + lang + ".lang", Resources.Config_strings.default_lang);
+            }
 
 
         }

@@ -55,7 +55,7 @@ namespace ssh_mon.SSH
 
             //   Task.WhenAll(connections123);
             //  Task.WaitAll(connections123.ToArray());
-
+            Program.CompletedCreatingConnectionList = true;
             return Task.CompletedTask;
         }
 
@@ -70,7 +70,7 @@ namespace ssh_mon.SSH
                 {
                     Tests.tests tests = new Tests.tests(sshClient, int_key);
                     sshClient.Connect();
-
+                    
                     //   var cmd = sshClient.CreateCommand("df -h");
                     // var cmd = sshClient.CreateCommand("top -n1");
                     //   string result = cmd.Execute();
@@ -84,9 +84,13 @@ namespace ssh_mon.SSH
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
+                    Console.ReadKey(true);
+                    Environment.Exit(0);
                 }
 
-
+                
+                    
+                
 
             }
             return Task.CompletedTask;

@@ -6,6 +6,8 @@
 ENG
 [Timers]
 cpu_ram_check timer(ms)=2000
+[debug]
+show_module_debug=false
 ";
 
 
@@ -41,6 +43,8 @@ deselect_server_menu=2. Deselect server
 restart_gui=3. Restart GUI
 execute_fix_command_menu=f - execute fix command for selected server
 select_server=Please enter server ID
+deselect_server=Please enter server ID to deselect
+selected_server=SELECTED
 [Warns]
 already_encrypted=Servers directory seems to be already encrypted! Cancelling...
 not_encrypted=Servers directory seems to not be encrypted! Cancelling...
