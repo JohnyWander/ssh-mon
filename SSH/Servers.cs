@@ -38,7 +38,7 @@ namespace ssh_mon.SSH
                     AES.Interfaces.IEnryptDecrypt decrypt = new AES.Cryptography();
                     A:
                     Console.WriteLine(GUI.Language_strings.language_strings["input_password"] + "\n");
-                    string password = Program.passwordinput.input_password();
+                    string password = Program.inputPassword.input_password();
                     
                     string key_Aes= decrypt.Decrypt(File.ReadAllText("servers//KEYFILE"), password);
                     if (key_Aes.Length == 0)

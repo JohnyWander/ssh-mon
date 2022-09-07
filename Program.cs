@@ -19,16 +19,17 @@ namespace ssh_mon
         static public CancellationTokenSource cancel_all = new CancellationTokenSource();
         private static bool Already_Encrypted = true;
 
-        private static Action run_gui
+        public static bool CompletedCreatingConnectionList { set { } }
 
+        public static Tools.Interfaces.IInputPassword inputPassword = new Tools.Tools();
         static void Main(string[] args)
         {
 
-            init(); // chekcing for folders/ files presence etc.
-            Readconf.run(); ; // Reading configuration file
+            Initialization.Initialization.init(); // chekcing for folders/ files presence etc.
+            Readconf.run();
             LANG = Readconf.LANG;
             init_lang_strings(LANG); // Setting strings to provided language
-         //   Modules.LoadAssemblies.run();
+           // Modules.LoadAssemblies.run();
 
         
             
@@ -105,9 +106,9 @@ namespace ssh_mon
                 {
                     AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
                     Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
-                    string password = input_password();
+                    string password = inputPassword.input_password();
                     Console.WriteLine("\n"+GUI.Language_strings.language_strings["input_password_confirm"]);
-                    string password_confirm = input_password();
+                    string password_confirm = inputPassword.input_password();
 
                     if (password != password_confirm)
                     {
@@ -164,7 +165,7 @@ namespace ssh_mon
                     {
                         AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
                         Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
-                        string password = input_password();
+                        string password = inputPassword.input_password();
 
 
                         string[] encryptedStrings = new string[files.Length];
@@ -200,48 +201,7 @@ namespace ssh_mon
             Console.ReadKey();
         }
 
-        private static void init()
-        {
-            try
-            {
-                Directory.GetFiles("modules");
-            }
-            catch
-            {
-                Directory.CreateDirectory("modules");
-            }
-            try
-            {
-                Directory.GetFiles("lang");
-
-            }
-            catch (DirectoryNotFoundException)
-            {
-                Directory.CreateDirectory("lang");
-                File.WriteAllText("lang\\ENG.lang", Resources.Config_strings.default_lang);
-            }
-
-            try
-            {
-                File.OpenRead("config.cfg");
-            }
-            catch (FileNotFoundException)
-            {
-                File.WriteAllText("config.cfg", Resources.Config_strings.default_conf);
-            }
-
-            try
-            {
-                Directory.GetFiles("servers");
-            }
-            catch (DirectoryNotFoundException)
-            {
-                Directory.CreateDirectory("servers");
-                File.WriteAllText("servers\\DEFAULT_SERVER_CONFIG_FILE.txt", Resources.Config_strings.default_server);
-            }
-
-
-        }
+        
 
         private static void menu()
         {
@@ -269,29 +229,7 @@ namespace ssh_mon
             }
         }
 
-        public static string input_password()
-        {
-            string pass = "";
-            ConsoleKey key;
-            do
-            {
-                var keyInfo = Console.ReadKey(intercept: true);
-                key = keyInfo.Key;
-
-                if (key == ConsoleKey.Backspace && pass.Length > 0)
-                {
-                    Console.Write("\b \b");
-                    pass = pass[0..^1];
-                }
-                else if (!char.IsControl(keyInfo.KeyChar))
-                {
-                    Console.Write("*");
-                    pass += keyInfo.KeyChar;
-                }
-            } while (key != ConsoleKey.Enter);
-
-            return pass;
-        }
+       
 
     }
 }

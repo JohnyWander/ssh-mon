@@ -82,5 +82,15 @@ namespace ssh_mon.Tools
 
 
 
+        public void color_echo(ConsoleColor consoleColor,string text)
+        {
+            Console.ForegroundColor = consoleColor;
+            Console.WriteLine(text);
+
+        }
+
+
+
+
     }
 }
