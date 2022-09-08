@@ -47,6 +47,8 @@ Therefore setting timer below 1000ms is good idea now!(Please keep some rational
 the higher gets cpu usage!
 -Removed module functionality for now it was too buggy in it's main form
 -Fixed bug where sometimes gui started before connections were established and caused app to crash - Gui starts with set{} property as connections are established
+-Further code unspaghettification :)
+-removed GOTO solutions
 
 
 

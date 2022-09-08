@@ -14,17 +14,19 @@ namespace ssh_mon
 {
     class Program
     {
-        
+
         private static string LANG;
         static public CancellationTokenSource cancel_all = new CancellationTokenSource();
-        private static bool Already_Encrypted = true;
-        
+        public static bool Already_Encrypted { private get; set; } = true;
 
-        private static Action StartGui;                                      // STARTING GUI ON CONNECTION LIST CREATING COMPLETION
+
+        private static Action StartGui; // assigned in Main()                                    // STARTING GUI ON CONNECTION LIST CREATING COMPLETION
         public static bool CompletedCreatingConnectionList { set { StartGui(); } }
 
         public static Tools.Interfaces.IInputPassword inputPassword = new Tools.Tools();
         public static Tools.Interfaces.IConsoleWrite ConsoleWrite = new Tools.Tools();
+
+        public static string[] files { get; set; }
         static void Main(string[] args)
         {
 
@@ -32,14 +34,44 @@ namespace ssh_mon
             Readconf.run();
             LANG = Readconf.LANG;
             init_lang_strings(LANG); // Setting strings to provided language
-           // Modules.LoadAssemblies.run();
+                                     // Modules.LoadAssemblies.run();
 
-        
-            
-        
-            menu();
-        A:
 
+            files = Directory.GetFiles("servers");
+            StartGui = GUI.Default_GUI.run; // Assigning gui start void Action delegate to be invoked later
+            menu();// Writing menu
+            UserInput(); // Hanling rest of program with user input
+
+
+        }
+
+        public static void restart()
+        {
+            Console.WriteLine(GUI.Language_strings.language_strings["press_any"]);
+            Console.ReadKey();
+        }
+
+
+
+        private static void menu()
+        {
+            try
+            {
+                IDictionary<string, string> lang_strings = GUI.Language_strings.language_strings;
+                Console.WriteLine(lang_strings["start_test"]);
+                Console.WriteLine(lang_strings["encrypt_server_dir"]);
+                Console.WriteLine(lang_strings["decrypt_server_dir"]);
+            }
+            catch
+            {
+                init_lang_strings("ENG");
+                menu();
+            }
+
+        }
+
+        private static void UserInput()
+        {
 
             ConsoleKeyInfo key = Console.ReadKey();
             Console.Write("\b \b");
@@ -67,86 +99,52 @@ namespace ssh_mon
 
             if (switch_i == 1)
             {
-                Interop._DisableQuickEdit_.DisableQuickEdit(); // clicking on console window was messing up gui
-                
-             
-
-                var con = new SSH.connections();// building server list starting tests 
-                StartGui=GUI.Default_GUI.run;
-                //   Task cancel = Task.Run(() => Stop(cancel_all));
-                int servers = Directory.GetFiles("servers").Count();
-                con.run(cancel_all,Already_Encrypted);
-                // Task gui = Task.Run(() => GUI.Default_GUI.run());
-                
-                Task.WaitAll(con.connections123.ToArray());
-                //   gui.Wait();
-                Interop._DisableQuickEdit_.EnableQuickEdit();
-
+                Handle_Purpose(); // Actual work of program starts here !
             }
 
             if (switch_i == 2)
             {
-                
-               
-                foreach(string f in files)
+
+
+                foreach (string f in files)
                 {
                     if (File.ReadAllLines(f).Contains("[server]"))
                     {
                         Already_Encrypted = false;
-                    }    
-                    
+                    }
+
 
                 }
 
-                if(Already_Encrypted == true)
+                if (Already_Encrypted == true)
                 {
-                    ConsoleWrite.color_consoleWriteLine(ConsoleColor.Yellow,GUI.Language_strings.language_strings["already_encrypted"]);
-                    goto A;
+                    ConsoleWrite.color_consoleWriteLine(ConsoleColor.Yellow, GUI.Language_strings.language_strings["already_encrypted"]);
+                    UserInput();
                 }
                 else
                 {
-                    AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
+                    
                     Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
                     string password = inputPassword.input_password();
-                    Console.WriteLine("\n"+GUI.Language_strings.language_strings["input_password_confirm"]);
+                    Console.WriteLine("\n" + GUI.Language_strings.language_strings["input_password_confirm"]);
                     string password_confirm = inputPassword.input_password();
 
                     if (password != password_confirm)
                     {
-                        Console.WriteLine(GUI.Language_strings.language_strings["input_password_no_match"]);
-                        goto A;
+                        ConsoleWrite.color_consoleWriteLine(ConsoleColor.Red, GUI.Language_strings.language_strings["input_password_no_match"]);
+                        UserInput();
                     }
-                    else if( password == password_confirm) {
+                    else if (password == password_confirm)
+                    {
 
-                        try
-                        {
-                            string[] encryptedStrings = new string[files.Length];
-                            int i = 0;
-                            List<Task> files_to_encrypt = new List<Task>();
-                            foreach (string f in files)
-                            {
-                                files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Encrypt(File.ReadAllText(f), password))));
-                            }
+                        AES.Enrypt_server_dir.encrypt(password);
+                        UserInput();
 
-                            Task.WaitAll(files_to_encrypt.ToArray());
-
-                            Already_Encrypted = true;
-                            Console.ForegroundColor = ConsoleColor.Green;
-                            Console.WriteLine("\n"+GUI.Language_strings.language_strings["encryption_success"]);
-                            Console.ForegroundColor = ConsoleColor.Gray;
-                            goto A;
-                        }
-                        catch(Exception e)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine(GUI.Language_strings.language_strings["encryption_fail"]);
-                            Console.ForegroundColor = ConsoleColor.Gray;             
-                        }
                     }
                 }
             }
             if (switch_i == 3)
-            {      
+            {
                 foreach (string f in files)
                 {
                     if (File.ReadAllLines(f).Contains("[server]"))
@@ -156,9 +154,8 @@ namespace ssh_mon
                 }
                 if (Already_Encrypted == false)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(GUI.Language_strings.language_strings["not_encrypted"]);
-                    Console.ForegroundColor = ConsoleColor.Gray;             
+                    ConsoleWrite.color_consoleWriteLine(ConsoleColor.Yellow, GUI.Language_strings.language_strings["not_encrypted"]);
+                
                 }
                 else
                 {
@@ -180,47 +177,41 @@ namespace ssh_mon
                         Task.WaitAll(files_to_encrypt.ToArray()); // waiting for decryption to end
                         Already_Encrypted = false;
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("\n"+GUI.Language_strings.language_strings["decryption_success"]);
+                        Console.WriteLine("\n" + GUI.Language_strings.language_strings["decryption_success"]);
                         Console.ForegroundColor = ConsoleColor.Gray;
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.WriteLine(GUI.Language_strings.language_strings["decryption_fail"]);
                         Console.ForegroundColor = ConsoleColor.Gray;
                     }
                 }
-                goto A;
+                UserInput();
             }
 
 
         }
-
-        public static void restart()
+    
+        private static void Handle_Purpose()
         {
-            Console.WriteLine(GUI.Language_strings.language_strings["press_any"]);
-            Console.ReadKey();
+
+            Interop._DisableQuickEdit_.DisableQuickEdit(); // clicking on console window was messing up gui
+
+
+
+            var con = new SSH.connections();// building server list starting tests 
+
+            //   Task cancel = Task.Run(() => Stop(cancel_all));
+            int servers = Directory.GetFiles("servers").Count();
+            con.run(cancel_all, Already_Encrypted);
+            // Task gui = Task.Run(() => GUI.Default_GUI.run());
+
+            Task.WaitAll(con.connections123.ToArray());
+            //   gui.Wait();
+            Interop._DisableQuickEdit_.EnableQuickEdit();
         }
 
-        
-
-        private static void menu()
-        {
-            try
-            {
-                IDictionary<string, string> lang_strings = GUI.Language_strings.language_strings;
-                Console.WriteLine(lang_strings["start_test"]);
-                Console.WriteLine(lang_strings["encrypt_server_dir"]);
-                Console.WriteLine(lang_strings["decrypt_server_dir"]);
-            }
-            catch
-            {
-                init_lang_strings("ENG");
-                menu();
-            }
-
-        }
-       
 
         private static void init_lang_strings(string lang)
         {
