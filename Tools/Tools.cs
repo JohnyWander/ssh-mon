@@ -2,7 +2,7 @@
 using System.Security.Cryptography;
 namespace ssh_mon.Tools
 {
-    internal sealed class Tools : Interfaces.IStringTools, Interfaces.IKeyGen,Interfaces.IInputPassword
+    internal sealed class Tools : Interfaces.IStringTools, Interfaces.IKeyGen,Interfaces.IInputPassword,Interfaces.IConsoleWrite
     {
         // text
         public string left(string text, int count)
@@ -82,10 +82,11 @@ namespace ssh_mon.Tools
 
 
 
-        public void color_echo(ConsoleColor consoleColor,string text)
+        public void color_consoleWriteLine(ConsoleColor consoleColor,string text)
         {
             Console.ForegroundColor = consoleColor;
             Console.WriteLine(text);
+            Console.ResetColor();
 
         }
 

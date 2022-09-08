@@ -22,6 +22,7 @@ namespace ssh_mon
         public static bool CompletedCreatingConnectionList { set { } }
 
         public static Tools.Interfaces.IInputPassword inputPassword = new Tools.Tools();
+        public static Tools.Interfaces.IConsoleWrite ConsoleWrite = new Tools.Tools();
         static void Main(string[] args)
         {
 
