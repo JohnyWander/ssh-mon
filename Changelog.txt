@@ -45,6 +45,9 @@ v1.4.0
 to channel. Then separate Task runs them as they appear in channel.
 Therefore setting timer below 1000ms is good idea now!(Please keep some rationality :)) As gui won't mess up now  (!!! please note that the lower timer dela gets
 the higher gets cpu usage!
-Fo
+-Removed module functionality for now it was too buggy in it's main form
+-Fixed bug where sometimes gui started before connections were established and caused app to crash - Gui starts with set{} property as connections are established
+
+
 
 

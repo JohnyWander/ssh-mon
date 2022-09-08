@@ -18,8 +18,10 @@ namespace ssh_mon
         private static string LANG;
         static public CancellationTokenSource cancel_all = new CancellationTokenSource();
         private static bool Already_Encrypted = true;
+        
 
-        public static bool CompletedCreatingConnectionList { set { } }
+        private static Action StartGui;                                      // STARTING GUI ON CONNECTION LIST CREATING COMPLETION
+        public static bool CompletedCreatingConnectionList { set { StartGui(); } }
 
         public static Tools.Interfaces.IInputPassword inputPassword = new Tools.Tools();
         public static Tools.Interfaces.IConsoleWrite ConsoleWrite = new Tools.Tools();
@@ -70,12 +72,12 @@ namespace ssh_mon
              
 
                 var con = new SSH.connections();// building server list starting tests 
-
+                StartGui=GUI.Default_GUI.run;
                 //   Task cancel = Task.Run(() => Stop(cancel_all));
                 int servers = Directory.GetFiles("servers").Count();
                 con.run(cancel_all,Already_Encrypted);
                 // Task gui = Task.Run(() => GUI.Default_GUI.run());
-                GUI.Default_GUI.run();
+                
                 Task.WaitAll(con.connections123.ToArray());
                 //   gui.Wait();
                 Interop._DisableQuickEdit_.EnableQuickEdit();
@@ -98,9 +100,7 @@ namespace ssh_mon
 
                 if(Already_Encrypted == true)
                 {
-                    Console.ForegroundColor = ConsoleColor.Yellow;
-                    Console.WriteLine(GUI.Language_strings.language_strings["already_encrypted"]);
-                    Console.ForegroundColor = ConsoleColor.Gray;
+                    ConsoleWrite.color_consoleWriteLine(ConsoleColor.Yellow,GUI.Language_strings.language_strings["already_encrypted"]);
                     goto A;
                 }
                 else
