@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
-using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Net;
@@ -137,8 +136,9 @@ namespace ssh_mon
                     else if (password == password_confirm)
                     {
 
-                        AES.Enrypt_server_dir.encrypt(password);
-                        UserInput();
+                        AES.Enrypt_server_dir.encrypt(password); /// encrypting servers dir
+                        UserInput(); // listening for next input
+                        return;
 
                     }
                 }
@@ -155,39 +155,14 @@ namespace ssh_mon
                 if (Already_Encrypted == false)
                 {
                     ConsoleWrite.color_consoleWriteLine(ConsoleColor.Yellow, GUI.Language_strings.language_strings["not_encrypted"]);
-                
+
                 }
                 else
                 {
-                    try
-                    {
-                        AES.Interfaces.IEnryptDecrypt encrypt = new AES.Cryptography();
-                        Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
-                        string password = inputPassword.input_password();
-
-
-                        string[] encryptedStrings = new string[files.Length];
-                        int i = 0;
-                        List<Task> files_to_encrypt = new List<Task>();
-                        foreach (string f in files)
-                        {
-                            files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encrypt.Decrypt(File.ReadAllText(f), password)))); // Starting Decryption in parallel
-                        }
-
-                        Task.WaitAll(files_to_encrypt.ToArray()); // waiting for decryption to end
-                        Already_Encrypted = false;
-                        Console.ForegroundColor = ConsoleColor.Green;
-                        Console.WriteLine("\n" + GUI.Language_strings.language_strings["decryption_success"]);
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                    }
-                    catch (Exception e)
-                    {
-                        Console.ForegroundColor = ConsoleColor.Red;
-                        Console.WriteLine(GUI.Language_strings.language_strings["decryption_fail"]);
-                        Console.ForegroundColor = ConsoleColor.Gray;
-                    }
+                    string password = Program.inputPassword.input_password();
+                    AES.Enrypt_server_dir.encrypt(password);
+                    UserInput();
                 }
-                UserInput();
             }
 
 

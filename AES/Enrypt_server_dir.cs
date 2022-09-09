@@ -3,7 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.IO;
+//using System.Net;
+using ssh_mon.Tools.Interfaces;
+using static System.Net.WebRequestMethods;
+
 namespace ssh_mon.AES
 {
     internal static class Enrypt_server_dir
@@ -19,7 +22,7 @@ namespace ssh_mon.AES
                 List<Task> files_to_encrypt = new List<Task>();
                 foreach (string f in Program.files)
                 {
-                    files_to_encrypt.Add(Task.Run(() => File.WriteAllText(f, encryptor.Encrypt(File.ReadAllText(f), password))));
+                    files_to_encrypt.Add(Task.Run(() => System.IO.File.WriteAllText(f, encryptor.Encrypt(System.IO.File.ReadAllText(f), password))));
                 }
 
                 Task.WaitAll(files_to_encrypt.ToArray());
@@ -38,8 +41,34 @@ namespace ssh_mon.AES
             }
         }
 
+        public static void decrypt(string password)
+        {
+            try
+            {
+               
 
+                string[] encryptedStrings = new string[Program.files.Length];
+                int i = 0;
+                List<Task> files_to_encrypt = new List<Task>();
+                foreach (string f in Program.files)
+                {
+                    files_to_encrypt.Add(Task.Run(() => System.IO.File.WriteAllText(f, encryptor.Decrypt(System.IO.File.ReadAllText(f), password)))) ; // Starting Decryption in parallel
+                }
 
+                Task.WaitAll(files_to_encrypt.ToArray()); // waiting for decryption to end
+                Program.Already_Encrypted = false;
 
+                Program.ConsoleWrite.color_consoleWriteLine(ConsoleColor.Green,"\n" + GUI.Language_strings.language_strings["decryption_success"]);
+             
+            }
+            catch (Exception e)
+            {
+                Program.ConsoleWrite.color_consoleWriteLine(ConsoleColor.Red,
+                GUI.Language_strings.language_strings["decryption_fail"]);                
+            }
+        }
     }
+
+
+    
 }
