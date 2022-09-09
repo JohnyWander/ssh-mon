@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Renci.SshNet;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime;
+using System.Text;
+
 namespace ssh_mon.SSH
 {
 
@@ -10,7 +13,7 @@ namespace ssh_mon.SSH
     {
         public List<Server> serverlist = new List<Server>();
 
-        public IDictionary<string, Server> server_DICT = new Dictionary<string, Server>();
+       
         public List<Renci.SshNet.AuthenticationMethod> auths = new List<Renci.SshNet.AuthenticationMethod>();
         //serwisy
 
@@ -37,6 +40,7 @@ namespace ssh_mon.SSH
                 {
                     AES.Interfaces.IEnryptDecrypt decrypt = new AES.Cryptography();
                     A:
+                    
                     Console.WriteLine(GUI.Language_strings.language_strings["input_password"] + "\n");
                     string password = Program.inputPassword.input_password();
                     
@@ -48,9 +52,9 @@ namespace ssh_mon.SSH
                         Console.ForegroundColor = ConsoleColor.Gray;
                         goto A;
                     }
-                    
-                    
 
+
+                    int ite = 0;
                     foreach (string server in server_files)
                     {
                         if (!server.Contains("KEYFILE"))
@@ -69,10 +73,12 @@ namespace ssh_mon.SSH
                             if (enabled_Aes == true)
                             {
 
-                                server_DICT.Add(name_Aes, new Server(name_Aes, ip_Aes, port_Aes, login_Aes, key_Aes));
+                                serverlist.Add(new Server(name_Aes, ip_Aes, port_Aes, login_Aes, key_Aes,ite));
 
                             }
+                            ite++;
                         }
+
                     }
 
                 }
@@ -80,7 +86,7 @@ namespace ssh_mon.SSH
                 {
                     
                     key = File.ReadAllText("servers//KEYFILE");
-
+                    int ite = 0;
                         foreach (string server in server_files)
                         {
                             if (!server.Contains("KEYFILE"))
@@ -100,9 +106,10 @@ namespace ssh_mon.SSH
                                 if (enabled == true)
                                 {
 
-                                    server_DICT.Add(name, new Server(name, ip, port, login, key));
+                                    serverlist.Add(new Server(name, ip, port, login, key,ite));
 
                                 }
+                                ite++;
                             }
                             }
 
@@ -140,19 +147,35 @@ namespace ssh_mon.SSH
 
     public class Server
     {
+        public int ID { get; private set; }
         public string name { get; private set; }
         public string ip { get; private set; }
         public string user { get; private set; }
         public string keystr { get; private set; }
 
+        public SshClient SshClient { get; private set; }
+
         public string port { get; private set; }
-        public Server(string namec, string ipc, string portc, string userc, string keystrc)
+        public Server(string namec, string ipc, string portc, string userc, string keystrc, int id)
         {
             name = namec;
             ip = ipc;
             user = userc;
             keystr = keystrc;
             port = portc;
+            ID= id; 
+            Stream Key = new MemoryStream(Encoding.ASCII.GetBytes(keystr));
+            PrivateKeyFile pvk = new PrivateKeyFile(Key);
+            ConnectionInfo conn = new ConnectionInfo(ip, Convert.ToInt32(port.Trim()), user, new AuthenticationMethod[]
+                {
+                new PrivateKeyAuthenticationMethod(user,pvk)
+                });
+
+           SshClient = new SshClient(conn);
+            SshClient.Connect();
+
+
+
         }
 
 

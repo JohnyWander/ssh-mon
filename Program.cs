@@ -182,7 +182,7 @@ namespace ssh_mon
             con.run(cancel_all, Already_Encrypted);
             // Task gui = Task.Run(() => GUI.Default_GUI.run());
 
-            Task.WaitAll(con.connections123.ToArray());
+            //Task.WaitAll(con.connections_list.ToArray());
             //   gui.Wait();
             Interop._DisableQuickEdit_.EnableQuickEdit();
         }

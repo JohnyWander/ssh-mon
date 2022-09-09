@@ -11,89 +11,75 @@ namespace ssh_mon.SSH
     {
         static public IDictionary<int, string> names = new Dictionary<int, string>();
 
-        public List<Task> connections123 = new List<Task>();
-        public static int xD = 100;
+        public List<Thread> connections_thread_list = new List<Thread>();
+       
         public Task run(CancellationTokenSource cancel, bool Already_enrypted)
         {
             build_serverlist(Already_enrypted);
 
 
-            CancellationTokenSource cts = cancel;
-
-            int ite = 0;
-            foreach (var serv in server_DICT)
+            foreach (var conn in serverlist)
             {
-
-                var SERVER = serv.Value;
-
-
-                names.Add(ite, serv.Value.name);
-
-                //     Console.WriteLine(SERVER.keystr);
-                Stream Key = new MemoryStream(Encoding.ASCII.GetBytes(SERVER.keystr));
-
-                // PrivateKeyFile pvk = new PrivateKeyFile("priv.txt");
-                PrivateKeyFile pvk = new PrivateKeyFile(Key);
-
-
-                ConnectionInfo conn = new ConnectionInfo(SERVER.ip, Convert.ToInt32(SERVER.port.Trim()), SERVER.user, new AuthenticationMethod[]
+                names.Add(conn.ID, conn.name);
+                Thread C = new Thread(() =>
                 {
-                new PrivateKeyAuthenticationMethod(SERVER.user,pvk)
+                    connection_and_tests(conn.SshClient, cancel.Token, conn.name, conn.ID);
                 });
+                C.Start();
+                connections_thread_list.Add(C);
 
-                connections123.Add(Task.Factory.StartNew(() => connection_and_tests(conn, cts.Token, SERVER.name, ite), cts.Token));
-
-                Thread.Sleep(100);
-                ite++;
 
             }
 
-            //connections123.Add(Task.Run(() => Stop(cts)));
-
-
-
-
-            //   Task.WhenAll(connections123);
-            //  Task.WaitAll(connections123.ToArray());
             Program.CompletedCreatingConnectionList = true;
             return Task.CompletedTask;
         }
 
 
 
-        private Task connection_and_tests(ConnectionInfo connection, CancellationToken cts, string _serverID, int int_key)
-        {
-            string _serverID_ = _serverID;
-            using (var sshClient = new SshClient(connection))
-            {
+        private void connection_and_tests(SshClient client, CancellationToken cts, string _serverName, int int_keyID) { 
+            string _serverName_ = _serverName;
+           
+            
                 try
                 {
-                    Tests.tests tests = new Tests.tests(sshClient, int_key);
-                    sshClient.Connect();
-                    
-                    //   var cmd = sshClient.CreateCommand("df -h");
-                    // var cmd = sshClient.CreateCommand("top -n1");
-                    //   string result = cmd.Execute();
-                    //  Console.WriteLine(result);
-                    while (!cts.IsCancellationRequested)
+                    Tests.tests tests = new Tests.tests(client, int_keyID);
+                
+                //   var cmd = sshClient.CreateCommand("df -h");
+                // var cmd = sshClient.CreateCommand("top -n1");
+                //   string result = cmd.Execute();
+                //  Console.WriteLine(result);
+                while (!cts.IsCancellationRequested)
                     {
                         Task.Delay(2000).Wait();
                     }
 
+                tests.Get_cpu_ram.Stop();
+                //tests.Get_cpu_ram.Dispose();
+
+                client.Disconnect();
+                client.Dispose();
+              
+              
+                
+
+
+
+
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
-                    Console.ReadKey(true);
-                    Environment.Exit(0);
+                   // Console.WriteLine(e.Message);
+                  //  Console.ReadKey(true);
+                    //Environment.Exit(0);
                 }
 
                 
                     
                 
 
-            }
-            return Task.CompletedTask;
+            
+            
         }
 
 
@@ -118,6 +104,11 @@ namespace ssh_mon.SSH
             return Task.CompletedTask;
         }
 
+        private static void terminate_threads()
+        {
+
+
+        }
 
 
 

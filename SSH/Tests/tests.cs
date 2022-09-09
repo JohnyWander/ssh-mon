@@ -10,18 +10,20 @@ namespace ssh_mon.SSH.Tests
 {
     public class tests
     {
-       
+
 
         public string os;
         public int id;
-        public string cpu_usage { get; private set; } 
+        public string cpu_usage { get; private set; }
         public string cpu_usage_top_process;
 
-        public double ram_total { get;private set; }
+        public double ram_total { get; private set; }
         public double ram_used { get; private set; }
         public double ram_free { get; private set; }
 
         public string[] cpu_ram_returns;
+
+        public System.Timers.Timer Get_cpu_ram { get; set; } = new System.Timers.Timer() ;
         public tests(SshClient client, int server_ID)
         {
             id = server_ID;
@@ -29,7 +31,7 @@ namespace ssh_mon.SSH.Tests
 
             // Console.WriteLine(id);
 
-            System.Timers.Timer Get_cpu_ram = new System.Timers.Timer();
+            
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => cpu_usage = get_cpu_ram_usage(sender, e, client));
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id, cpu_usage, ram_total, ram_used, ram_free));
             Get_cpu_ram.Interval = Readconf.cpu_ram_timer;
