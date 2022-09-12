@@ -35,6 +35,8 @@ namespace ssh_mon
             init_lang_strings(LANG); // Setting strings to provided language
                                      // Modules.LoadAssemblies.run();
 
+            Modules.LoadAssemblies Modules = new Modules.LoadAssemblies();
+
 
             files = Directory.GetFiles("servers");
             StartGui = GUI.Default_GUI.run; // Assigning gui start void Action delegate to be invoked later

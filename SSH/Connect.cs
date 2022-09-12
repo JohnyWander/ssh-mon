@@ -43,7 +43,7 @@ namespace ssh_mon.SSH
             
                 try
                 {
-                    Tests.tests tests = new Tests.tests(client, int_keyID);
+                    Tests.tests tests = new Tests.tests(client, int_keyID,_serverName);
                 
                 //   var cmd = sshClient.CreateCommand("df -h");
                 // var cmd = sshClient.CreateCommand("top -n1");

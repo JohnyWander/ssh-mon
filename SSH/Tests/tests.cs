@@ -24,7 +24,7 @@ namespace ssh_mon.SSH.Tests
         public string[] cpu_ram_returns;
 
         public System.Timers.Timer Get_cpu_ram { get; set; } = new System.Timers.Timer() ;
-        public tests(SshClient client, int server_ID)
+        public tests(SshClient client, int server_ID, string servername)
         {
             id = server_ID;
             // client.Connect();
@@ -36,6 +36,8 @@ namespace ssh_mon.SSH.Tests
             Get_cpu_ram.Elapsed += new ElapsedEventHandler((sender, e) => ssh_mon.GUI.Default_GUI.fetch_cpu_ram_result(id, cpu_usage, ram_total, ram_used, ram_free));
             Get_cpu_ram.Interval = Readconf.cpu_ram_timer;
             Get_cpu_ram.Enabled = true;
+
+            
 
         }
         private string get_cpu_ram_usage(object source, ElapsedEventArgs e, SshClient client)
