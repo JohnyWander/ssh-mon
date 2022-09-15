@@ -37,6 +37,8 @@ encryption_fail=Encryption fail
 decryption_success=Decryption was successful
 decryption_fail=Decryption failed! Wrong Password?
 press_any=Press any key to restart
+module_load_correct=Correctly loaded module
+module_load_failt=Failed to load specified module
 [Second_menu]
 select_server_menu=1. Select server
 deselect_server_menu=2. Deselect server

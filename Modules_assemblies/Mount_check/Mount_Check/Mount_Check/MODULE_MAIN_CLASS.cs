@@ -4,11 +4,11 @@ using System.Collections.Generic;
 
 namespace Module // MUST BE THE SAME
 {
-  
+
 
     public class MODULE_MAIN_CLASS // Name must be the same
     {
-        private bool Loaded_Correctly=false;
+        private bool Loaded_Correctly = false;
 
         private IDictionary<int, string> CommandsToExecute = new Dictionary<int, string> //commands to run
         {
@@ -16,12 +16,12 @@ namespace Module // MUST BE THE SAME
             {2,@"ps -ef --forest | grep ""ssh"" "}
         };
 
-        private IDictionary<int, string> OutputsResultShouldContain = new Dictionary<int, string>
+        private IDictionary<int, string> CommandsResults = new Dictionary<int, string>
         {
-            {1,"/dev/sda1"},
-
-
+            {1,"" },
+            {2,""}
         };
+
 
         public MODULE_MAIN_CLASS()
         {
@@ -37,6 +37,33 @@ namespace Module // MUST BE THE SAME
         {
             return Loaded_Correctly;
         }
+
+        public IDictionary<int, string> GET_commands_to_execute()
+        {
+            return CommandsToExecute;
+        }
+
+
+        public bool PUSH_command_results(object key, object value)
+        {
+            try
+            {
+                CommandsResults[(int)key] = (string)value;
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        public IDictionary<int,string> GET_command_results()
+        {
+            return CommandsResults;
+        }
+
+
+
 
 
 

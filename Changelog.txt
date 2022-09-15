@@ -49,7 +49,7 @@ the higher gets cpu usage!
 -Fixed bug where sometimes gui started before connections were established and caused app to crash - Gui starts with set{} property as connections are established
 -Further code unspaghettification :)
 -removed weird GOTO solutions
-
+-Rewrite of module loading class
 
 
 
