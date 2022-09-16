@@ -24,7 +24,7 @@ namespace ssh_mon
 
         public static Tools.Interfaces.IInputPassword inputPassword = new Tools.Tools();
         public static Tools.Interfaces.IConsoleWrite ConsoleWrite = new Tools.Tools();
-
+        public static Modules.LoadAssemblies Modules;
         public static string[] files { get; set; }
         static void Main(string[] args)
         {
@@ -35,7 +35,8 @@ namespace ssh_mon
             init_lang_strings(LANG); // Setting strings to provided language
                                      // Modules.LoadAssemblies.run();
 
-            Modules.LoadAssemblies Modules = new Modules.LoadAssemblies();
+           
+                                                                           
 
 
             files = Directory.GetFiles("servers");
@@ -161,8 +162,9 @@ namespace ssh_mon
                 }
                 else
                 {
+                    Console.WriteLine(GUI.Language_strings.language_strings["input_password"]);
                     string password = Program.inputPassword.input_password();
-                    AES.Enrypt_server_dir.encrypt(password);
+                    AES.Enrypt_server_dir.decrypt(password);
                     UserInput();
                 }
             }
@@ -172,7 +174,7 @@ namespace ssh_mon
     
         private static void Handle_Purpose()
         {
-
+            Modules = new Modules.LoadAssemblies();
             Interop._DisableQuickEdit_.DisableQuickEdit(); // clicking on console window was messing up gui
 
 

@@ -37,7 +37,11 @@ namespace ssh_mon.SSH.Tests
             Get_cpu_ram.Interval = Readconf.cpu_ram_timer;
             Get_cpu_ram.Enabled = true;
 
-            
+
+            ModuleTests MT = new ModuleTests(Program.Modules.Module_List,client,id);
+
+
+
 
         }
         private string get_cpu_ram_usage(object source, ElapsedEventArgs e, SshClient client)

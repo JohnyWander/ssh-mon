@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Reflection;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
+
 namespace ssh_mon.Modules
 {
     public class LoadAssemblies
@@ -40,6 +42,7 @@ namespace ssh_mon.Modules
 
     public class Module
     {
+        
         public delegate bool BoolDelegateToDerive(); // as CreateDelegate needs type to be derived from delegate
         public Delegate LoadedCorrectly{ private set; get; }
         /// <summary>
@@ -63,13 +66,20 @@ namespace ssh_mon.Modules
 
         ///////////////////////////////
        
-        public Delegate GET_fix_commands { private set; get; }
-
-
-
+        public Delegate GET_fix_commands { private set; get; } // Commands that could be executed to fix serverside issue
+        //////////////////////////////////////////////////////////////////////////        
+        public Delegate RUNTest;
+        //////////////////////////////////////////////////////////////////////////
+        public delegate string StringToDerive();
+        public Delegate GET_err_messege;
+        //////////////////////////////////////////////////////////////////////////
+        public delegate int IntToDerive();
+        public Delegate GET_Delay;
 
         public Module(string path)
         {
+            
+
             Assembly module =  Assembly.LoadFrom(path); // Loads assembly module
             Type _MODULE_MAIN_CLASS_ = module.GetType("Module.MODULE_MAIN_CLASS"); // Gets main class from module
             object activaror = Activator.CreateInstance(_MODULE_MAIN_CLASS_); // Creates instance of the class
@@ -80,8 +90,8 @@ namespace ssh_mon.Modules
             /////////////////
             ///
             object result = LoadedCorrectly.DynamicInvoke();
-            if ((bool)result) { Program.ConsoleWrite.color_consoleWriteLine(ConsoleColor.Green,GUI.Language_strings.language_strings["module_load_correct"]); }
-            else {Program.ConsoleWrite.color_consoleWriteLine(ConsoleColor.Red,GUI.Language_strings.language_strings["module_load_fail"]); };
+            if ((bool)result) { Program.ConsoleWrite.color_consoleWriteLine(ConsoleColor.Green,GUI.Language_strings.language_strings["module_load_correct"]+" "+path); }
+            else {Program.ConsoleWrite.color_consoleWriteLine(ConsoleColor.Red,GUI.Language_strings.language_strings["module_load_fail"]+" "+ path); };
             
             
                
@@ -109,6 +119,16 @@ namespace ssh_mon.Modules
 
                 MethodInfo get_fix_commands = _MODULE_MAIN_CLASS_.GetMethod("GET_fix_commands");
                 GET_fix_commands = Delegate.CreateDelegate(typeof(IDictionaryToDerive), activaror, get_fix_commands);
+
+                MethodInfo get_err_messege = _MODULE_MAIN_CLASS_.GetMethod("GET_err_messege");
+                GET_err_messege = Delegate.CreateDelegate(typeof(StringToDerive), activaror, get_err_messege);
+
+
+                MethodInfo get_delay = _MODULE_MAIN_CLASS_.GetMethod("GET_delay");
+                GET_Delay = Delegate.CreateDelegate(typeof(IntToDerive), activaror, get_delay);
+
+                MethodInfo runtest = _MODULE_MAIN_CLASS_.GetMethod("TEST");
+                RUNTest = Delegate.CreateDelegate(typeof(BoolDelegateToDerive), activaror, runtest);
 
             }
 

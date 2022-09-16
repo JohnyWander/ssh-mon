@@ -40,7 +40,7 @@ v1.3.3 - even more unspaghettification
 v1.3.4
 -added possibility to run specified command when test form custom module fails
 
-v1.4.0
+v1.4
 -Thread safety - Implemented GUI task queue with System.Threading.Channels - asynchronously writing Action delegates 
 to channel. Then separate Task runs them as they appear in channel.
 Therefore setting timer below 1000ms is good idea now!(Please keep some rationality :)) As gui won't mess up now  (!!! please note that the lower timer dela gets
@@ -50,6 +50,13 @@ the higher gets cpu usage!
 -Further code unspaghettification :)
 -removed weird GOTO solutions
 -Rewrite of module loading class
+
+
+v1.5.0
+-Added back posibility of using modules, rewrited logic of loading modules and invoking their functions. for now it might be buggy if using with multiple servers
+-code unspaghettification
+-This version will be released as first stable version
+
 
 
 

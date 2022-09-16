@@ -438,7 +438,65 @@ namespace ssh_mon.GUI
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.SetCursorPosition(old_x, old_y);
         }
+
+        public static void insert_error_from_module(object[] args)
+        {
+            Action<object[]> insert_module_error = (args) =>
+            {
+                string error = (string)args[0];
+                int server_id = (int)args[1];
+                (int old_x, int old_y) = Console.GetCursorPosition();
+                Console.SetCursorPosition(pos_x1[server_id], pos_y1[server_id]);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write(error);
+                (pos_x2[server_id], pos_y2[server_id]) = Console.GetCursorPosition();
+                Console.ResetColor();
+                Console.SetCursorPosition(old_x, old_y);
+
+            };
+
+            Task.Run(async () =>
+            {
+               await queue.Writer.WaitToWriteAsync();
+               var pair = new KeyValuePair<Action<object[]>, object[]>(insert_module_error, args);
+               await queue.Writer.WriteAsync(pair);
+            });
+            
+        }
+
+        public static void module_clear_error(object[] args)
+        {
+
+            Action<object[]> clear = (args) =>
+            {
+                int serverid = (int)args[0];
+                Console.SetCursorPosition(pos_x1[serverid], pos_y1[serverid]);
+                (int old_x, int old_y) = Console.GetCursorPosition();
+                for(int i = pos_x1[serverid]; i <= pos_x2[serverid]; i++)
+                {
+                    Console.Write(" ");
+                }
+                Console.SetCursorPosition(old_x, old_y);
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("OK");
+                Console.ResetColor();
+                Console.SetCursorPosition(old_x, old_y);
+
+            };
+
+
+            Task.Run(async () =>
+            {
+                await queue.Writer.WaitToWriteAsync();
+                var pair = new KeyValuePair<Action<object[]>, object[]>(clear, args);
+                await queue.Writer.WriteAsync(pair);
+            });
+        }
+
+        
     }
+
+  
 
     // public static void
 
