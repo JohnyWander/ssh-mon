@@ -2,7 +2,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace ssh_mon.SSH
@@ -136,6 +138,7 @@ namespace ssh_mon.SSH
 
             // serverlist.Add(new Server(ip_S, user_S, keyStr_SERWISY));
             // server_DICT.Add(0, new Server(ip_S, user_S, keyStr_SERWISY));
+          //  serverlist = serverlist.OrderBy(l => l.name).ToList();
         }
 
 
@@ -172,7 +175,16 @@ namespace ssh_mon.SSH
                 });
 
            SshClient = new SshClient(conn);
-            SshClient.Connect();
+            try
+            {
+                SshClient.Connect();
+            }
+            catch (System.Net.Sockets.SocketException SE)
+            {
+                Program.ConsoleWrite.color_consoleWriteLine(ConsoleColor.Red, GUI.Language_strings.language_strings["connection_failed_no_response" +
+                    SE.Message]);
+            }
+
 
 
 

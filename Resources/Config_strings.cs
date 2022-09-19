@@ -8,6 +8,8 @@ ENG
 cpu_ram_check timer(ms)=2000
 [debug]
 show_module_debug=false
+[modules]
+show_module_name_on_error=true
 ";
 
 
@@ -53,6 +55,7 @@ not_encrypted=Servers directory seems to not be encrypted! Cancelling...
 execute_fix_command=Try to Execute fix command?
 [Exceptions]
 server_config_error=Something is not ok with the server configuration file ! :
+connection_failed_no_response=Connection Failed -
 ";
 
     }

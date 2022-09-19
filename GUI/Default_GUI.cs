@@ -4,6 +4,8 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Channels;
 using System.Timers;
+using System.Runtime.ConstrainedExecution;
+
 namespace ssh_mon.GUI
 {
     public class queued_job {
@@ -283,17 +285,36 @@ namespace ssh_mon.GUI
 
         }
 
-        private static void select(int id, int old_x, int old_y)
+        private static void select(int id_, int old_x_, int old_y_)
         {
             try
             {
-                selection_indicator[id] = true;
-                Console.SetCursorPosition(pos_x1_selection[id], pos_y1_selection[id]);
-                Console.ForegroundColor = ConsoleColor.Yellow;
-                Console.Write(Language_strings.language_strings["selected_server"]);
-                (pos_x2_selection[id], pos_y2_selection[id]) = Console.GetCursorPosition();
-                Console.SetCursorPosition(old_x, old_y);
-                Console.ForegroundColor = ConsoleColor.Gray;
+                object[] args = new object[] { id_, old_x_, old_y_ };
+                Action<object[]> job = (args) =>
+                {
+                    int id = (int)args[0];
+                    int old_x = (int)args[1];
+                    int old_y = (int)args[2];
+
+
+
+                    selection_indicator[id] = true;
+                    Console.SetCursorPosition(pos_x1_selection[id], pos_y1_selection[id]);
+                    Console.ForegroundColor = ConsoleColor.Yellow;
+                    Console.Write(Language_strings.language_strings["selected_server"]);
+                    (pos_x2_selection[id], pos_y2_selection[id]) = Console.GetCursorPosition();
+                    Console.SetCursorPosition(old_x, old_y);
+                    Console.ForegroundColor = ConsoleColor.Gray;
+                };
+
+                Task.Run(async () =>
+                {
+
+                    var pair = new KeyValuePair<Action<object[]>, object[]>(job, args);
+                    await queue.Writer.WaitToWriteAsync();
+                    await queue.Writer.WriteAsync(pair);
+                });
+
             }
             catch (Exception e)
             {
@@ -304,7 +325,7 @@ namespace ssh_mon.GUI
         private static void option2_deselect_server()
         {
             (int x, int y) = Console.GetCursorPosition();
-            Console.Write(Language_strings.language_strings["deselect_server_"]);
+            Console.Write(Language_strings.language_strings["deselect_server"]);
             (int x1, int y2) = Console.GetCursorPosition();
             ConsoleKeyInfo key = Console.ReadKey();
             // Console.Write("\b \b");
@@ -322,13 +343,34 @@ namespace ssh_mon.GUI
             deselect(switch_i, x, y);
         }
 
-        private static void deselect(int id, int old_x, int old_y)
+        private static void deselect(int id_, int old_x_, int old_y_)
         {
-            selection_indicator[id] = false;
-            Console.SetCursorPosition(pos_x1_selection[id], pos_y1_selection[id]);
-            for (int i = pos_x1_selection[id]; i < pos_x2_selection[id]; i++) { Console.Write(" "); }
-            Console.SetCursorPosition(old_x, old_y);
-            Console.ForegroundColor = ConsoleColor.Gray;
+            object[] args = new object[] { id_, old_x_, old_y_ };
+            Action<object[]> job = (args) =>
+            {
+                int id=(int)id_;
+                int old_x=(int)old_x_;
+                int old_y=(int)old_y_;
+
+                selection_indicator[id] = false;
+                Console.SetCursorPosition(pos_x1_selection[id], pos_y1_selection[id]);
+                for (int i = pos_x1_selection[id]; i < pos_x2_selection[id]; i++) { Console.Write(" "); }
+                Console.SetCursorPosition(old_x, old_y);
+                Console.ForegroundColor = ConsoleColor.Gray;
+            };
+
+            Task.Run(async () =>
+            {
+                
+                var pair = new KeyValuePair<Action<object[]>, object[]>(job, args);
+                await queue.Writer.WaitToWriteAsync();
+                await queue.Writer.WriteAsync(pair);
+            });
+
+
+
+
+
 
         }
 
