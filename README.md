@@ -7,7 +7,6 @@ Usage:
 2. Create file/files in "servers" folder, with connection information please use default file as an example
 3. Generate RSA keypair. Put private key in "KEYFILE" file in "servers" folder and pub key in .ssh/authorized_keys on server
 4. Run app and use option nuber one.
-
-4.(Optional) Encrypt Servers directory (recommended)
-5.(Optional) Use "in air" decryption when launching test (recommended)
-6. (Optional) Create your own module for more advanced tests
+5.(Optional) Encrypt Servers directory (recommended)
+6.(Optional) Use "in air" decryption when launching test (recommended)
+7.(Optional) Create your own module for more advanced tests
