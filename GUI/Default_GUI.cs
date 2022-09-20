@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Threading.Channels;
 using System.Timers;
 using System.Runtime.ConstrainedExecution;
+using ssh_mon.SSH.Tests;
+using System.Dynamic;
 
 namespace ssh_mon.GUI
 {
@@ -46,14 +48,16 @@ namespace ssh_mon.GUI
         static private int[] ram_y1 = new int[Server_amount];
         static private int[] ram_y2 = new int[Server_amount];
         static private int[] ram_color_index = new int[Server_amount];
-
-        static private bool[] selection_indicator = new bool[Server_amount];// if serverl is selected bool
+       // static public  List<bool> selection_indicator = new List<bool>(Server_amount);
+        static public bool[] selection_indicator = new bool[Server_amount];// if serverl is selected bool
         static private int[] pos_x1_selection = new int[Server_amount];// selection position indicators
         static private int[] pos_x2_selection = new int[Server_amount];//
         static private int[] pos_y1_selection = new int[Server_amount];//
         static private int[] pos_y2_selection = new int[Server_amount];//
 
-        public static bool[] Execute_fix_command = new bool[Server_amount];
+       public static bool[] Execute_fix_command = new bool[Server_amount];
+
+       // public static List<bool> Execute_fix_command = new List<bool>();
 
 
         static public bool[] is_error_present = new bool[Server_amount];
@@ -63,10 +67,23 @@ namespace ssh_mon.GUI
 
 
         static Channel<KeyValuePair<Action<object[]>,object[]>> queue = Channel.CreateUnbounded<KeyValuePair<Action<object[]>,object[]>>();
+     
+        
+
+
 
         public static bool _CONSOLE_block { set; private get; } = false;
 
         //    private static char dot = '\u2022';
+
+
+
+
+        public static Action ExecuteFixCOMMAND;
+
+
+
+
 
         public static void run()
         {
@@ -230,15 +247,9 @@ namespace ssh_mon.GUI
                                 //    return Task.CompletedTask;
                                 break;
                             case 'f':
-                                int ite = 0;
-                                foreach (bool b in selection_indicator)
-                                {
-                                    if (b == true) { Execute_fix_command[ite] = true; }
-                                    ite++;
-                                }
-
-
+                                ExecuteFixCOMMAND();
                                 break;
+                            
                         }
                     }
                     else
@@ -266,8 +277,12 @@ namespace ssh_mon.GUI
         private static void option1_select_server()
         {
             (int x, int y) = Console.GetCursorPosition();
+
+            int x1; int y2;
             Console.Write(Language_strings.language_strings["select_server"]);
-            (int x1, int y2) = Console.GetCursorPosition();
+
+            ///!!!!!!!!!!!!
+            (x1,y2)  = Console.GetCursorPosition(); 
             ConsoleKeyInfo key = Console.ReadKey();
             // Console.Write("\b \b");
 

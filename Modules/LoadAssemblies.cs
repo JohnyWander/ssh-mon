@@ -76,9 +76,10 @@ namespace ssh_mon.Modules
         public delegate int IntToDerive();
         public Delegate GET_Delay;
 
+        public string NAME;
         public Module(string path)
         {
-            
+             NAME = path.Split("\\").Last();
 
             Assembly module =  Assembly.LoadFrom(path); // Loads assembly module
             Type _MODULE_MAIN_CLASS_ = module.GetType("Module.MODULE_MAIN_CLASS"); // Gets main class from module
